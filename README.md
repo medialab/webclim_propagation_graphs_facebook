@@ -4,7 +4,7 @@ Our general goal is to better understand the fake news ecosystem: who create the
 
 This specific projet maps the Facebook groups sharing fake news URLs, these URLs being extracted from the Science Feedback database.
 
-<img src="screenhot_graph.png"/>
+<img src="screenshot_graph.png"/>
 
 ### Install the work environment
 
