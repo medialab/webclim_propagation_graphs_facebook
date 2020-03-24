@@ -20,12 +20,22 @@ def clean_data(posts_df):
 
     # Sometimes a same facebook group can share multiple times the same URL, 
     # creating multiple lines in the input CSV. We remove the duplicates here:
-    posts_df = posts_df[['url', 'account_name']]
+    posts_df = posts_df[['url', 'account_name', 'account_subscriber_count']]
     posts_df = posts_df.drop_duplicates()
 
     # We remove the facebook groups that have shared only one fake URL:
     vc = posts_df['account_name'].value_counts()
     posts_df = posts_df[posts_df['account_name'].isin(vc[vc > 1].index)]
+
+    # We print a few interesting statistics:
+    print()
+    print("The top 5 of facebook groups sharing the more fake URLs:\n")
+    print(posts_df['account_name'].value_counts().head())
+
+    print("\n\nThe top 5 of facebook groups with the more followers:\n")
+    temp = posts_df[['account_name', 'account_subscriber_count']].drop_duplicates()
+    print(temp.sort_values(by="account_subscriber_count", ascending=False).head())
+    print()
 
     return posts_df
 
@@ -38,7 +48,7 @@ def create_bipartite_graph(posts_df, GRAPH_DIRECTORY):
     G.add_nodes_from(posts_df['url'].tolist(), color="#13ed6a", bipartite=0)
     G.add_nodes_from(posts_df['account_name'].tolist(), color="#a84032", bipartite=1)
 
-    G.add_edges_from(list(posts_df.itertuples(index=False, name=None)))
+    G.add_edges_from(list(posts_df[['url', 'account_name']].itertuples(index=False, name=None)))
 
     graph_path = os.path.join(".", GRAPH_DIRECTORY, "url_fbgroup_bipartite.gexf")
     nx.write_gexf(G, graph_path, encoding="utf-8")
