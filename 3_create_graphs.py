@@ -21,7 +21,7 @@ def clean_data(posts_df):
     # Sometimes a same facebook group can share multiple times the same URL, 
     # creating multiple lines in the input CSV. We remove the duplicates here:
     posts_df = posts_df[['url', 'account_name', 'account_subscriber_count', 'actual_like_count']]
-    posts_df = posts_df.drop_duplicates()
+    posts_df = posts_df.drop_duplicates(subset=['url', 'account_name'], keep='last')
 
     # We remove the facebook groups that have shared only one fake URL:
     vc = posts_df['account_name'].value_counts()
