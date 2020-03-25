@@ -52,7 +52,8 @@ def create_bipartite_graph(posts_df, GRAPH_DIRECTORY):
     G = nx.Graph()
 
     G.add_nodes_from(posts_df['url'].tolist(), color="#13ed6a", bipartite=0)
-    G.add_nodes_from(posts_df['account_name'].tolist(), color="#a84032", bipartite=1)
+    for index, row in posts_df.iterrows():
+        G.add_node(row['account_name'], color="#a84032", bipartite=1, size=min(row['account_subscriber_count'], 5e6)/2e5)
 
     G.add_edges_from(list(posts_df[['url', 'account_name']].itertuples(index=False, name=None)))
 
