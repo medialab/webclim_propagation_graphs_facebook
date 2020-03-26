@@ -37,7 +37,7 @@ The following command will take a long time to run (3 hours on my computer):
 ```
 ./2_minet_requests.sh
 ```
-You should now see a "fake_posts.csv" file appear in the `clean_data` folder.
+You should now see the "clean_fake_url.csv" and "fake_posts.csv" files appear in the `clean_data` folder.
 
 Finally you should run:
 ```
