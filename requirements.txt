@@ -1,3 +1,3 @@
-pandas
-minet
-networkx
+pandas==1.0.1
+minet==0.25.0
+networkx==2.4
