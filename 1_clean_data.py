@@ -41,15 +41,22 @@ def clean_data(url_df):
 
 
 def merge_data(url_df, fact_check_df):
-    """Merge the two CSVs to get the fact-check date associated with each URL"""
+    """Merge the two CSVs to get the fact-check date and the field (health or science) 
+    associated with each URL"""
 
-    url_df = url_df.merge(fact_check_df[['Items reviewed', 'Date of publication']], 
+    # Use a REGEX to get the article field from the fact-check url website:
+    # if the fact-check url starts with 'https://climatefeedback.org' -> 'climate' article
+    # if the fact-check url starts with 'https://healthfeedback.org'  -> 'health' article
+    fact_check_df['field'] = fact_check_df['Review url'].str.extract('https://([^/]+)feedback.org')
+
+    url_df = url_df.merge(fact_check_df[['Items reviewed', 'Date of publication', 'field']], 
                         left_on='Item reviewed', right_on='Items reviewed', how='left')
 
-    url_df = url_df[['url', 'Item reviewed', 'Date of publication']]
+    url_df = url_df[['url', 'Item reviewed', 'Date of publication', 'field']]
 
-    # One item was not associated with a date, so we remove the corresponding lines
-    url_df = url_df.dropna(subset=['Date of publication'])
+    # One item reviewed / claim was not associated with a date, so we remove the corresponding lines
+    # Also a few fields are NaN as their fact-check urls started with "https://sciencefeedback.co"
+    url_df = url_df.dropna(subset=['Date of publication', 'field'])
 
     return url_df
 
