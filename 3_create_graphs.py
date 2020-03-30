@@ -69,10 +69,10 @@ def print_statistics(posts_df):
 
 def color_gradient(ratio):
     """Return an HEX color between green and blue, depeding on the ratio value
-    (0 = blue, 1 = green)"""
+    (0 = blue, 1 = yellow)"""
     blue_color = np.array(mpl.colors.to_rgb('#1f77b4'))
-    green_color = np.array(mpl.colors.to_rgb('green'))
-    return mpl.colors.to_hex((1 - ratio) * blue_color + ratio * green_color)
+    yellow_color = np.array(mpl.colors.to_rgb('#ffea00'))
+    return mpl.colors.to_hex((1 - ratio) * blue_color + ratio * yellow_color)
 
 
 
@@ -82,12 +82,12 @@ def create_graphs(posts_df, fb_group_df, GRAPH_DIRECTORY):
     bipartite_graph = nx.Graph()
 
     bipartite_graph.add_nodes_from(posts_df['url'].tolist(), 
-                                   color="#13ed6a", bipartite=0)
+                                   color="#FF0000", bipartite=0)
 
     for _, row in fb_group_df.iterrows():
         bipartite_graph.add_node(row['account_name'], 
                                  color=color_gradient(row['health_ratio']), bipartite=1, 
-                                 size=max(min(row['account_subscriber_count'], 5e6)/2e5, 4))
+                                 size=int(max(min(row['account_subscriber_count'], 5e6)/2e5, 4)))
 
     bipartite_graph.add_edges_from(list(posts_df[['url', 'account_name']].itertuples(index=False, name=None)))
 
