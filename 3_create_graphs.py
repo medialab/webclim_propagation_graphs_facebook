@@ -27,6 +27,7 @@ def clean_data(posts_df, clean_url_df):
     # Sometimes a same facebook group can share multiple times the same URL, 
     # creating multiple lines in the input CSV. We remove the duplicates here:
     posts_df = posts_df[['url', 'account_name', 'account_subscriber_count', 'actual_like_count']]
+    posts_df['account_name'] = posts_df['account_name'].apply(lambda x: x.upper())
     posts_df = posts_df.drop_duplicates(subset=['url', 'account_name'], keep='last')
 
     # We remove the facebook groups that have shared only one fake URL:
@@ -34,8 +35,9 @@ def clean_data(posts_df, clean_url_df):
     posts_df = posts_df[posts_df['account_name'].isin(vc[vc > 1].index)]
 
     # We merge the two dataframes to get the 'field' column back:
-    posts_df = posts_df.merge(clean_url_df[['normalized_url', 'field']], 
+    posts_df = posts_df.merge(clean_url_df[['normalized_url', 'domain_name', 'field']], 
                           left_on='url', right_on='normalized_url', how='left')
+    posts_df = posts_df.dropna(subset=['domain_name'])
 
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the number of followers -> node size
@@ -45,8 +47,10 @@ def clean_data(posts_df, clean_url_df):
         .to_frame().reset_index()
     fb_group_df["health_ratio"] = (fb_group_df["field"].apply(lambda x: x.count('health')) /
                                    fb_group_df["field"].apply(len))
-    fb_group_df = fb_group_df.merge(posts_df[['account_name', 'account_subscriber_count']].drop_duplicates(),
-                                left_on='account_name', right_on='account_name', how='left')
+    fb_group_df = fb_group_df.merge(posts_df[['account_name', 'account_subscriber_count']]\
+                             .sort_values(by="account_subscriber_count", ascending=True)\
+                             .drop_duplicates(subset = ['account_name'], keep='last'),
+                             left_on='account_name', right_on='account_name', how='left')
 
     return posts_df, fb_group_df
 
@@ -75,33 +79,35 @@ def color_gradient(ratio):
     return mpl.colors.to_hex((1 - ratio) * blue_color + ratio * yellow_color)
 
 
-
-def create_graphs(posts_df, fb_group_df, GRAPH_DIRECTORY):
+def create_graphs(posts_df, fb_group_df, GRAPH_DIRECTORY, graph_option):
     """Create the bipartite graph with the facebook groups and the URLs.
     The edges represent the fact that this group has shared this URL."""
     bipartite_graph = nx.Graph()
 
-    bipartite_graph.add_nodes_from(posts_df['url'].tolist(), 
+    bipartite_graph.add_nodes_from(posts_df[graph_option].unique().tolist(), 
                                    color="#FF0000", bipartite=0)
 
     for _, row in fb_group_df.iterrows():
         bipartite_graph.add_node(row['account_name'], 
                                  color=color_gradient(row['health_ratio']), bipartite=1, 
                                  size=int(max(min(row['account_subscriber_count'], 5e6)/2e5, 4)))
+    
+    bipartite_graph.add_edges_from(list(posts_df[[graph_option, 'account_name']]\
+                                   .itertuples(index=False, name=None)))
 
-    bipartite_graph.add_edges_from(list(posts_df[['url', 'account_name']].itertuples(index=False, name=None)))
-
-    bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "url_fbgroup_bipartite.gexf")
+    bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, graph_option + "_fbgroup_bipartite.gexf")
     nx.write_gexf(bipartite_graph, bipartite_graph_path, encoding="utf-8")
 
     monopartite_graph = bipartite.projected_graph(bipartite_graph, 
-                                                  posts_df['account_name'].tolist())
+                                                  fb_group_df['account_name'].unique().tolist())
 
-    monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "fbgroup_monopartite.gexf")
+    monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, graph_option + "_fbgroup_monopartite.gexf")
     nx.write_gexf(monopartite_graph, monopartite_graph_path, encoding="utf-8")
 
 
 if __name__ == "__main__":
+    graph_option = "url" # 2 possibilities: "url" or "domain_name"
+
     CLEAN_DATA_DIRECTORY = "clean_data"
     GRAPH_DIRECTORY = "graph"
 
@@ -109,4 +115,4 @@ if __name__ == "__main__":
     posts_df, fb_group_df = clean_data(posts_df, clean_url_df)
     print_statistics(posts_df)
 
-    create_graphs(posts_df, fb_group_df, GRAPH_DIRECTORY)
+    create_graphs(posts_df, fb_group_df, GRAPH_DIRECTORY, graph_option)
