@@ -12,6 +12,7 @@ import os
 
 def import_data(CLEAN_DATA_DIRECTORY):
     """Imports the dataframe created by the minet request"""
+
     posts_path = os.path.join(".", CLEAN_DATA_DIRECTORY, "fake_posts.csv")
     posts_df = pd.read_csv(posts_path)
 
@@ -24,10 +25,11 @@ def import_data(CLEAN_DATA_DIRECTORY):
 def clean_data(posts_df, clean_url_df):
     """Prepares the dataframe to be used to build the graphs"""
 
+    posts_df.loc[:, 'account_name'] = posts_df.loc[:, 'account_name'].apply(lambda x: x.upper())
+
     # Sometimes a same facebook group can share multiple times the same URL, 
     # creating multiple lines in the input CSV. We remove the duplicates here:
     posts_df = posts_df[['url', 'account_name', 'account_subscriber_count', 'actual_like_count']]
-    posts_df['account_name'] = posts_df['account_name'].apply(lambda x: x.upper())
     posts_df = posts_df.drop_duplicates(subset=['url', 'account_name'], keep='last')
 
     # We remove the facebook groups that have shared only one fake URL:
@@ -52,11 +54,16 @@ def clean_data(posts_df, clean_url_df):
                              .drop_duplicates(subset = ['account_name'], keep='last'),
                              left_on='account_name', right_on='account_name', how='left')
 
-    return posts_df, fb_group_df
+    # We prepare a dataframe to import the url nodes with one attribute:
+    # - the domain name -> the label
+    url_df = posts_df[['url', 'domain_name']].drop_duplicates()
+
+    return posts_df, fb_group_df, url_df
 
 
 def print_statistics(posts_df):
     """We print a few interesting statistics"""
+
     print()
     print("The top 5 of facebook groups sharing the more fake URLs:\n")
     print(posts_df['account_name'].value_counts().head())
@@ -79,13 +86,15 @@ def color_gradient(ratio):
     return mpl.colors.to_hex((1 - ratio) * blue_color + ratio * yellow_color)
 
 
-def create_graphs(posts_df, fb_group_df, GRAPH_DIRECTORY, graph_option):
+def create_graphs(posts_df, fb_group_df, url_df, GRAPH_DIRECTORY, graph_option):
     """Create the bipartite graph with the facebook groups and the URLs.
     The edges represent the fact that this group has shared this URL."""
+
     bipartite_graph = nx.Graph()
 
-    bipartite_graph.add_nodes_from(posts_df[graph_option].unique().tolist(), 
-                                   color="#FF0000", bipartite=0)
+    for _, row in url_df.iterrows():
+        bipartite_graph.add_node(row[graph_option], label=row['domain_name'], 
+                                 color="#FF0000", bipartite=0)
 
     for _, row in fb_group_df.iterrows():
         bipartite_graph.add_node(row['account_name'], 
@@ -112,7 +121,7 @@ if __name__ == "__main__":
     GRAPH_DIRECTORY = "graph"
 
     posts_df, clean_url_df = import_data(CLEAN_DATA_DIRECTORY)
-    posts_df, fb_group_df = clean_data(posts_df, clean_url_df)
-    print_statistics(posts_df)
+    posts_df, fb_group_df, url_df = clean_data(posts_df, clean_url_df)
+    # print_statistics(posts_df)
 
-    create_graphs(posts_df, fb_group_df, GRAPH_DIRECTORY, graph_option)
+    create_graphs(posts_df, fb_group_df, url_df, GRAPH_DIRECTORY, graph_option)
