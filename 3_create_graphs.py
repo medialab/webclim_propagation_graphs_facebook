@@ -86,9 +86,9 @@ def color_gradient(ratio):
     return mpl.colors.to_hex((1 - ratio) * blue_color + ratio * yellow_color)
 
 
-def create_graphs(posts_df, fb_group_df, url_df, GRAPH_DIRECTORY, graph_option):
-    """Create the bipartite graph with the facebook groups and the URLs.
-    The edges represent the fact that this group has shared this URL."""
+def create_bipartite_graph(posts_df, fb_group_df, url_df, GRAPH_DIRECTORY, graph_option):
+    """Create the bipartite graph with the facebook groups and the URLs or domain names.
+    The edges represent the fact that this group has shared this URL / domain."""
 
     bipartite_graph = nx.Graph()
 
@@ -107,6 +107,12 @@ def create_graphs(posts_df, fb_group_df, url_df, GRAPH_DIRECTORY, graph_option):
     bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, graph_option + "_fbgroup_bipartite.gexf")
     nx.write_gexf(bipartite_graph, bipartite_graph_path, encoding="utf-8")
 
+    return bipartite_graph
+
+
+def create_monopartite_graph(bipartite_graph, fb_group_df, GRAPH_DIRECTORY, graph_option):
+    """Create the monopartite graph with only the facebook groups."""
+
     monopartite_graph = bipartite.projected_graph(bipartite_graph, 
                                                   fb_group_df['account_name'].unique().tolist())
 
@@ -124,4 +130,6 @@ if __name__ == "__main__":
     posts_df, fb_group_df, url_df = clean_data(posts_df, clean_url_df)
     # print_statistics(posts_df)
 
-    create_graphs(posts_df, fb_group_df, url_df, GRAPH_DIRECTORY, graph_option)
+    bipartite_graph = create_bipartite_graph(posts_df, fb_group_df, url_df, 
+                                             GRAPH_DIRECTORY, graph_option)
+    create_monopartite_graph(bipartite_graph, fb_group_df, GRAPH_DIRECTORY, graph_option)
