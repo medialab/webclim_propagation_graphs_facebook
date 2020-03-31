@@ -43,5 +43,5 @@ Finally you should run:
 ```
 python 3_create_graphs.py
 ```
-And see the "url_fbgroup_bipartite.gexf" file appear in the `graph` folder.
+You should see see 4 gexf files appear in the `graph` folder.
 
