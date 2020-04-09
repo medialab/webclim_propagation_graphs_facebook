@@ -25,16 +25,15 @@ def import_data(CLEAN_DATA_DIRECTORY):
 def clean_data(posts_df, clean_url_df):
     """Prepares the dataframe to be used to build the graphs"""
 
-    posts_df.loc[:, 'account_name'] = posts_df.loc[:, 'account_name'].apply(lambda x: x.upper())
-
     # Sometimes a same facebook group can share multiple times the same URL, 
     # creating multiple lines in the input CSV. We remove the duplicates here:
-    posts_df = posts_df[['url', 'account_name', 'account_subscriber_count', 'actual_like_count']]
-    posts_df = posts_df.drop_duplicates(subset=['url', 'account_name'], keep='last')
+    posts_df = posts_df[['url', 'account_name', 'account_id',
+                         'account_subscriber_count', 'actual_like_count']]
+    posts_df = posts_df.drop_duplicates(subset=['url', 'account_id'], keep='last')
 
     # We remove the facebook groups that have shared only one fake URL:
-    vc = posts_df['account_name'].value_counts()
-    posts_df = posts_df[posts_df['account_name'].isin(vc[vc > 1].index)]
+    vc = posts_df['account_id'].value_counts()
+    posts_df = posts_df[posts_df['account_id'].isin(vc[vc > 1].index)]
 
     # We merge the two dataframes to get the 'field' column back:
     posts_df = posts_df.merge(clean_url_df[['normalized_url', 'domain_name', 'field']], 
@@ -45,14 +44,14 @@ def clean_data(posts_df, clean_url_df):
     # - the number of followers -> node size
     # - the ratio of health fake news being shared vs. climate fake news -> node color
     #   (green = a group sharing only fake news about health, blue = only about climate)
-    fb_group_df = posts_df.groupby('account_name')['field'].apply(list)\
+    fb_group_df = posts_df.groupby('account_id')['field'].apply(list)\
         .to_frame().reset_index()
     fb_group_df["health_ratio"] = (fb_group_df["field"].apply(lambda x: x.count('health')) /
                                    fb_group_df["field"].apply(len))
-    fb_group_df = fb_group_df.merge(posts_df[['account_name', 'account_subscriber_count']]\
+    fb_group_df = fb_group_df.merge(posts_df[['account_id', 'account_name', 'account_subscriber_count']]\
                              .sort_values(by="account_subscriber_count", ascending=True)\
-                             .drop_duplicates(subset = ['account_name'], keep='last'),
-                             left_on='account_name', right_on='account_name', how='left')
+                             .drop_duplicates(subset = ['account_id'], keep='last'),
+                             left_on='account_id', right_on='account_id', how='left')
 
     # We prepare a dataframe to import the url nodes with one attribute:
     # - the domain name -> the label
@@ -92,16 +91,18 @@ def create_bipartite_graph(posts_df, fb_group_df, url_df, GRAPH_DIRECTORY, graph
 
     bipartite_graph = nx.Graph()
 
-    for _, row in url_df.iterrows():
-        bipartite_graph.add_node(row[graph_option], label=row['domain_name'], 
-                                 color="#FF0000", bipartite=0)
-
     for _, row in fb_group_df.iterrows():
-        bipartite_graph.add_node(row['account_name'], 
-                                 color=color_gradient(row['health_ratio']), bipartite=1, 
-                                 size=int(max(min(row['account_subscriber_count'], 5e6)/2e5, 4)))
+        bipartite_graph.add_node(row['account_id'],
+                                 label=row['account_name'],
+                                 type="facebook_account", 
+                                 number_followers=np.log10(row['account_subscriber_count']))
+
+    for _, row in url_df.iterrows():
+        bipartite_graph.add_node(row[graph_option], 
+                                 label=row['domain_name'],
+                                 type="domain_name")
     
-    bipartite_graph.add_edges_from(list(posts_df[[graph_option, 'account_name']]\
+    bipartite_graph.add_edges_from(list(posts_df[[graph_option, 'account_id']]\
                                    .itertuples(index=False, name=None)))
 
     bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, graph_option + "_fbgroup_bipartite.gexf")
@@ -114,7 +115,7 @@ def create_monopartite_graph(bipartite_graph, fb_group_df, GRAPH_DIRECTORY, grap
     """Create the monopartite graph with only the facebook groups."""
 
     monopartite_graph = bipartite.projected_graph(bipartite_graph, 
-                                                  fb_group_df['account_name'].unique().tolist())
+                                                  fb_group_df['account_id'].unique().tolist())
 
     monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, graph_option + "_fbgroup_monopartite.gexf")
     nx.write_gexf(monopartite_graph, monopartite_graph_path, encoding="utf-8")
