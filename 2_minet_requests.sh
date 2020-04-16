@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # choose a scientific topic between: "health", "climate" or "COVID-19":
-SCIENTIFIC_TOPIC="COVID-19"
+SCIENTIFIC_TOPIC="health"
 CLEAN_DATA_DIRECTORY="clean_data"
 
 INPUT_FILE="./${CLEAN_DATA_DIRECTORY}/fake_url_${SCIENTIFIC_TOPIC}.csv"
@@ -18,5 +18,5 @@ else
 fi
 
 # The climate command has taken 58 minutes to run on my computer (16 April, 313 URLs).
-# The COVID-19 command has taken ? minutes to run on my computer (16 April, 244 URLs).
-# The health command has taken ? minutes to run on my computer (16 April, 612 URLs).
+# The COVID-19 command has taken 44 minutes to run on my computer (16 April, 244 URLs).
+# The health command has taken 1 hour and 54 minutes to run on my computer (16 April, 612 URLs).

@@ -68,12 +68,11 @@ def save_data(url_df, SCIENTIFIC_TOPIC, CLEAN_DATA_DIRECTORY):
 
 
 if __name__ == "__main__":
+    # choose a scientific topic between: "health", "climate" or "COVID-19":
+    SCIENTIFIC_TOPIC = "COVID-19"
 
     RAW_DATA_DIRECTORY = "raw_data"
     CLEAN_DATA_DIRECTORY = "clean_data"
-
-    # choose a scientific topic between: "health", "climate" or "COVID-19":
-    SCIENTIFIC_TOPIC = "COVID-19"
 
     url_df, fact_check_df = import_data(RAW_DATA_DIRECTORY)
     url_df = clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC)
