@@ -101,17 +101,16 @@ def create_graph(posts_df, fb_group_df, domain_df,
         bipartite_graph.add_node(int(row['account_id']),
                                  label=row['account_name'],
                                  type="facebook_account_or_page",
-                                 color=NODE_COLOR[SCIENTIFIC_TOPIC],
+                                #  color=NODE_COLOR[SCIENTIFIC_TOPIC],
+                                 nb_fake_news_shared=row['size'],
                                  nb_followers=row['account_subscriber_count'],
                                 #  fake_news_shared=row['fake_news_shared'],
-                                 nb_fake_news_shared=row['size']
                                  )
 
     for _, row in domain_df.iterrows():
         bipartite_graph.add_node(row['domain_name'], 
-                                 label=row['domain_name'],
                                  type="domain_name",
-                                 color="#000",
+                                #  color="#000",
                                 #  fake_news_shared=row['fake_news_shared'],
                                  nb_fake_news_shared=row['size']
                                  )
