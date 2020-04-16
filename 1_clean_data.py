@@ -2,6 +2,8 @@
 from the two CSV files extracted from the Science Feedback AirTable"""
 
 import pandas as pd
+import ural
+
 import os
 
 
@@ -18,8 +20,8 @@ def import_data(RAW_DATA_DIRECTORY):
     return url_df, fact_check_df
 
 
-def clean_data(url_df):
-    """Clean and filter the URL data"""
+def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
+    """Clean and merge the appearance data"""
 
     # Remove the spaces added by error arount the URLs
     url_df['url'] = url_df['url'].transform(lambda x: x.strip())
@@ -28,42 +30,40 @@ def clean_data(url_df):
     # keeping only the first, i.e. the more recent ocurrence.
     url_df = url_df.drop_duplicates(subset = "url", keep = "first")
 
-    # Filter the URLs to keep only :
-    # 1/ the ones flagged as False
-    # 2/ the ones whose fact-check was sent and processed by facebook
-    # 3/ the ones that Facebook finally corrected to either "True", "Partly False" and "Not Rated"
-    url_df = url_df[(url_df['Flag as'] == 'False') & 
-                    (url_df['Fb flagged'] == 'done') &
-                    (url_df['Fb correction status'].isna() |
-                    (url_df['Fb correction status'] == 'Appeal by publisher'))]
-
-    return url_df
-
-
-def merge_data(url_df, fact_check_df):
-    """Merge the two CSVs to get the fact-check date and the field (health or science) 
-    associated with each URL"""
+    # Filter the URLs to keep only the ones flagged as False:
+    url_df = url_df[(url_df['Flag as'] == 'False')]
 
     # Use a REGEX to get the article field from the fact-check url website:
     # if the fact-check url starts with 'https://climatefeedback.org' -> 'climate' article
     # if the fact-check url starts with 'https://healthfeedback.org'  -> 'health' article
     fact_check_df['field'] = fact_check_df['Review url'].str.extract('https://([^/]+)feedback.org')
 
-    url_df = url_df.merge(fact_check_df[['Items reviewed', 'Date of publication', 'field']], 
+    # Merge the two dataframes to get the 'field' for each url:
+    url_df = url_df.dropna(subset=['Item reviewed'])
+    fact_check_df = fact_check_df.dropna(subset=['Items reviewed'])
+    url_df = url_df.merge(fact_check_df[['Items reviewed', 'field', 'topic']], 
                         left_on='Item reviewed', right_on='Items reviewed', how='left')
 
-    url_df = url_df[['url', 'Item reviewed', 'Date of publication', 'field']]
+    # Keep only the URL about the scientific topic of interest:
+    url_df.loc[url_df['topic'] == 'COVID-19', 'field'] = 'COVID-19'
+    url_df = url_df.dropna(subset=['field'])
+    url_df = url_df[url_df['field'] == SCIENTIFIC_TOPIC]
 
-    # One item reviewed / claim was not associated with a date, so we remove the corresponding lines
-    # Also a few fields are NaN as their fact-check urls started with "https://sciencefeedback.co"
-    url_df = url_df.dropna(subset=['Date of publication', 'field'])
+    # Clean the URLs and extract its domain name:
+    url_df['url'] = url_df['url'].apply(lambda x: ural.normalize_url(x, 
+                                                                     strip_protocol=False, 
+                                                                     strip_trailing_slash=True))
+    url_df['domain_name'] = url_df['url'].apply(lambda x: ural.get_domain_name(x))
 
+    url_df = url_df[['url', 'Item reviewed', 'field', 'domain_name']]
+    
     return url_df
 
 
-def save_data(url_df, CLEAN_DATA_DIRECTORY):
+def save_data(url_df, SCIENTIFIC_TOPIC, CLEAN_DATA_DIRECTORY):
     """Save the clean CSV"""
-    clean_url_path = os.path.join(".", CLEAN_DATA_DIRECTORY, "fake_url.csv")
+    clean_url_path = os.path.join(".", CLEAN_DATA_DIRECTORY, 
+                                  "fake_url_" + SCIENTIFIC_TOPIC + ".csv")
     url_df.to_csv(clean_url_path, index=False)
 
 
@@ -72,7 +72,9 @@ if __name__ == "__main__":
     RAW_DATA_DIRECTORY = "raw_data"
     CLEAN_DATA_DIRECTORY = "clean_data"
 
+    # choose a scientific topic between: "health", "climate" or "COVID-19":
+    SCIENTIFIC_TOPIC = "COVID-19"
+
     url_df, fact_check_df = import_data(RAW_DATA_DIRECTORY)
-    url_df = clean_data(url_df)
-    url_df = merge_data(url_df, fact_check_df)
-    save_data(url_df, CLEAN_DATA_DIRECTORY)
+    url_df = clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC)
+    save_data(url_df, SCIENTIFIC_TOPIC, CLEAN_DATA_DIRECTORY)
