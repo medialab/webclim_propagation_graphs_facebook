@@ -12,8 +12,8 @@ from networkx.algorithms import bipartite
 import os
 
 
-def import_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
-    """Imports the dataframe created by the minet request"""
+def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
+    """Import and prepare the dataframe to be used to build the graphs"""
 
     posts_path = os.path.join(".", CLEAN_DATA_DIRECTORY, 
                               "fake_posts_" + SCIENTIFIC_TOPIC + ".csv")
@@ -22,14 +22,9 @@ def import_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
     clean_url_path = os.path.join(".", CLEAN_DATA_DIRECTORY, 
                                   "fake_url_" + SCIENTIFIC_TOPIC + ".csv")
     clean_url_df = pd.read_csv(clean_url_path)
-
-    return posts_df, clean_url_df
-
-
-def clean_data(posts_df, clean_url_df):
-    """Prepares the dataframe to be used to build the graphs"""
         
     posts_df = posts_df.dropna(subset=['account_id', 'url'])
+    posts_df['account_id'] = posts_df['account_id'].apply(lambda x:int(x))
     
     # Sometimes a same facebook group can share multiple times the same URL, 
     # creating multiple lines in the input CSV. We remove the duplicates here:
@@ -139,8 +134,7 @@ if __name__ == "__main__":
     CLEAN_DATA_DIRECTORY = "clean_data"
     GRAPH_DIRECTORY = "graph"
 
-    posts_df, clean_url_df = import_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC)
-    posts_df, fb_group_df, domain_df = clean_data(posts_df, clean_url_df)
+    posts_df, fb_group_df, domain_df = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC)
 
     print_statistics(posts_df)
 
