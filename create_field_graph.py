@@ -52,14 +52,14 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
                 .to_frame().reset_index()
     fb_group_df = fb_group_df.merge(temp, left_on='account_id', right_on='account_id', how='left')
     fb_group_df = fb_group_df.rename(columns={"url": "fake_news_shared"})
-    fb_group_df['size'] = fb_group_df['fake_news_shared'].apply(lambda x:len(x))
+    fb_group_df['nb_fake_news_shared'] = fb_group_df['fake_news_shared'].apply(lambda x:len(x))
 
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the fake news URL shared by this domain -> node size
     domain_df = posts_df.groupby('domain_name')['url'].apply(list)\
                     .to_frame().reset_index()
     domain_df = domain_df.rename(columns={"url": "fake_news_shared"})
-    domain_df['size'] = domain_df['fake_news_shared'].apply(lambda x:len(x))
+    domain_df['nb_fake_news_shared'] = domain_df['fake_news_shared'].apply(lambda x:len(x))
     
     return posts_df, fb_group_df, domain_df
 
@@ -96,18 +96,14 @@ def create_graph(posts_df, fb_group_df, domain_df,
         bipartite_graph.add_node(int(row['account_id']),
                                  label=row['account_name'],
                                  type="facebook_account_or_page",
-                                #  color=NODE_COLOR[SCIENTIFIC_TOPIC],
-                                 nb_fake_news_shared=row['size'],
+                                 nb_fake_news_shared=row['nb_fake_news_shared'],
                                  nb_followers=row['account_subscriber_count'],
-                                #  fake_news_shared=row['fake_news_shared'],
                                  )
 
     for _, row in domain_df.iterrows():
         bipartite_graph.add_node(row['domain_name'], 
                                  type="domain_name",
-                                #  color="#000",
-                                #  fake_news_shared=row['fake_news_shared'],
-                                 nb_fake_news_shared=row['size']
+                                 nb_fake_news_shared=row['nb_fake_news_shared']
                                  )
     
     bipartite_graph.add_edges_from(list(posts_df[['domain_name', 'account_id']]\
@@ -125,11 +121,6 @@ def create_graph(posts_df, fb_group_df, domain_df,
 if __name__ == "__main__":
     # choose a scientific topic between: "health", "climate" or "COVID-19":
     SCIENTIFIC_TOPIC = "COVID-19"
-    NODE_COLOR = {
-        "climate": "#00F",
-        "health": "#FF0",
-        "COVID-19": "#F00"
-        }
 
     CLEAN_DATA_DIRECTORY = "clean_data"
     GRAPH_DIRECTORY = "graph"
