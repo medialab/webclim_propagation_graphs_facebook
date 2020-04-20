@@ -1,7 +1,7 @@
 .ipynb_checkpoints
-config.json
 *.csv
 *.gexf
 *.ipynb
 *.png
 __pycache__/*
+*.json
