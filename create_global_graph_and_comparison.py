@@ -34,6 +34,31 @@ def create_venn_diagram(subsets, title, FIGURE_DIRECTORY):
     plt.savefig(diagram_path)
 
 
+def compare_follower_number(fb_group_df_climate, fb_group_df_health, 
+                            fb_group_df_covid19, FIGURE_DIRECTORY):
+
+    specialist = set(fb_group_df_climate['account_id'].values) - \
+        set(fb_group_df_health['account_id'].values).union(set(fb_group_df_covid19['account_id'].values))
+    specialist_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(specialist)]['account_subscriber_count']
+
+    generalist = set(fb_group_df_climate['account_id'].values) - specialist
+    generalist_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(generalist)]['account_subscriber_count']
+
+    # histogram on log scale, use non-equal bin sizes, such that they look equal on log scale.
+    logbins = np.logspace(np.log10(10), np.log10(15000000), 21)
+
+    plt.figure()
+    plt.hist(specialist_nb, bins=logbins, color=[0, 0, 1, 0.6], label="Specialist groups")
+    plt.hist(generalist_nb, bins=logbins, color=[0.4, 0.4, 0.5, 0.6], label="Generalist groups")
+    plt.legend(frameon=False)
+    plt.title("Histograms of the number of followers (logarithmic scale)")
+
+    plt.xscale('log')
+
+    figure_path = os.path.join(".", FIGURE_DIRECTORY, "comparison_follower_number.png")
+    plt.savefig(figure_path)
+
+
 if __name__ == "__main__":
 
     CLEAN_DATA_DIRECTORY = "clean_data"
@@ -57,3 +82,5 @@ if __name__ == "__main__":
         ]
     create_venn_diagram(domain_subsets, "domain_names", FIGURE_DIRECTORY)
 
+    compare_follower_number(fb_group_df_climate, fb_group_df_health, 
+                            fb_group_df_covid19, FIGURE_DIRECTORY)
