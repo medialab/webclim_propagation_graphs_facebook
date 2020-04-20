@@ -3,5 +3,6 @@
 *.gexf
 *.ipynb
 *.png
+!screenshot_graph.png
 __pycache__/*
 *.json
