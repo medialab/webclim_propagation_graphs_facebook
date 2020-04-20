@@ -27,7 +27,7 @@ You should first export the two following tables in a CSV format from the Scienc
 
 And put them in the `raw_data` folder. Then run this command:
 ```
-python 1_clean_data.py
+python clean_data.py
 ```
 You should now see a "fake_url.csv" file appear in the `clean_data` folder.
 
@@ -35,13 +35,19 @@ You should now get a crowdtangle token and write it in a `config.json` file simi
 (except that you should write the token value instead of "blablabla").
 The following command will take a long time to run (3 hours on my computer):
 ```
-./2_minet_requests.sh
+./minet_requests.sh
 ```
-You should now see the "clean_fake_url.csv" and "fake_posts.csv" files appear in the `clean_data` folder.
+You should now see the "fake_posts.csv" files appear in the `clean_data` folder.
 
 Finally you should run:
 ```
-python 3_create_graphs.py
+python create_field_graphs.py
 ```
-You should see see 4 gexf files appear in the `graph` folder.
+You should see a gexf file appear in the `graph` folder. This is the graph for a specific topic.
+
+The command:
+```
+python create_venn_diagram.py
+```
+creates two Venn diagrams in png in the `diagram` folder.
 
