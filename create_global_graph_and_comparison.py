@@ -21,7 +21,7 @@ def create_venn_diagram(subsets, title, FIGURE_DIRECTORY):
     plt.figure()
 
     v = venn3(subsets=subsets, 
-              set_labels=('Climate', 'Health', 'Covid-19'),
+              set_labels=('Climat', 'Santé', 'Covid-19'),
               set_colors=([0.4, 0.4, 1, 1], [1, 1, 0.6, 1], [1, 0.4, 0.4, 1]),
               alpha=1)
 
@@ -37,23 +37,57 @@ def create_venn_diagram(subsets, title, FIGURE_DIRECTORY):
 def compare_follower_number(fb_group_df_climate, fb_group_df_health, 
                             fb_group_df_covid19, FIGURE_DIRECTORY):
 
-    specialist = set(fb_group_df_climate['account_id'].values) - \
+    climate = set(fb_group_df_climate['account_id'].values) - \
         set(fb_group_df_health['account_id'].values).union(set(fb_group_df_covid19['account_id'].values))
-    specialist_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(specialist)]['account_subscriber_count']
+    climate_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate)]['account_subscriber_count']
+    print("Median follower count for climate only: ", np.median(climate_nb))
 
-    generalist = set(fb_group_df_climate['account_id'].values) - specialist
-    generalist_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(generalist)]['account_subscriber_count']
+    climate_health = set(fb_group_df_climate['account_id'].values) - climate \
+        - set(fb_group_df_covid19['account_id'].values)
+    climate_health_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health)]['account_subscriber_count']
+    print("Median follower count for climate and health: ", np.median(climate_health_nb))
 
-    # histogram on log scale, use non-equal bin sizes, such that they look equal on log scale.
-    logbins = np.logspace(np.log10(10), np.log10(15000000), 21)
+    climate_covid = set(fb_group_df_climate['account_id'].values) - climate \
+        - set(fb_group_df_health['account_id'].values)
+    climate_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_covid)]['account_subscriber_count']
+    print("Median follower count for climate and covid: ", np.median(climate_covid_nb))
 
-    plt.figure()
-    plt.hist(specialist_nb, bins=logbins, color=[0, 0, 1, 0.6], label="Specialist groups")
-    plt.hist(generalist_nb, bins=logbins, color=[0.4, 0.4, 0.5, 0.6], label="Generalist groups")
-    plt.legend(frameon=False)
-    plt.title("Histograms of the number of followers (logarithmic scale)")
+    climate_health_covid = set(fb_group_df_climate['account_id'].values)\
+        .intersection(set(fb_group_df_covid19['account_id'].values), set(fb_group_df_health['account_id'].values))
+    climate_health_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health_covid)]['account_subscriber_count']
+    print("Median follower count for climate and covid: ", np.median(climate_health_covid_nb))
 
-    plt.xscale('log')
+    plt.figure(figsize=[9, 6])
+
+    plt.plot(np.random.normal(0, 0.04, size=len(climate_health_covid_nb)), climate_health_covid_nb, 
+            color='grey', marker='.', linestyle='', alpha=0.5)
+    plt.plot([-.2, .2], [np.median(climate_health_covid_nb), np.median(climate_health_covid_nb)],
+            color='grey', linestyle='--')
+
+    plt.plot(np.random.normal(1, 0.04, size=len(climate_health_nb)), climate_health_nb, 
+            color='green', marker='.', linestyle='', alpha=0.5)
+    plt.plot([.8, 1.2], [np.median(climate_health_nb), np.median(climate_health_nb)],
+            color='green', linestyle='--')
+
+    plt.plot(np.random.normal(2, 0.04, size=len(climate_covid_nb)), climate_covid_nb, 
+            color='violet', marker='.', linestyle='', alpha=0.5)
+    plt.plot([1.8, 2.2], [np.median(climate_covid_nb), np.median(climate_covid_nb)],
+            color='violet', linestyle='--')
+
+    plt.plot(np.random.normal(3, 0.04, size=len(climate_nb)), climate_nb,
+            color='blue', marker='.', linestyle='', alpha=0.5)
+    plt.plot([2.8, 3.2], [np.median(climate_nb), np.median(climate_nb)],
+            color='blue', linestyle='--')
+
+    plt.yscale('log')
+
+    plt.ylabel("Nombre d'abonnés\n(échelle logarithmique)")
+    plt.xticks(np.arange(4), ('Groupes partageant\ndes fake news\nclimat, santé et Covid-19',
+                            'Groupes partageant\ndes fake news\nclimat et santé',
+                            'Groupes partageant\ndes fake news\nclimat et Covid-19',
+                            'Groupes partageant\ndes fake news\nuniquement climat'))
+    plt.xlim(-0.5, 3.5)
+    plt.tight_layout()
 
     figure_path = os.path.join(".", FIGURE_DIRECTORY, "comparison_follower_number.png")
     plt.savefig(figure_path)
@@ -75,12 +109,12 @@ if __name__ == "__main__":
         ]
     create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY)
 
-    domain_subsets = [
-        set(domain_df_climate['domain_name'].values),
-        set(domain_df_health['domain_name'].values),
-        set(domain_df_covid19['domain_name'].values)
-        ]
-    create_venn_diagram(domain_subsets, "domain_names", FIGURE_DIRECTORY)
+    # domain_subsets = [
+    #     set(domain_df_climate['domain_name'].values),
+    #     set(domain_df_health['domain_name'].values),
+    #     set(domain_df_covid19['domain_name'].values)
+    #     ]
+    # create_venn_diagram(domain_subsets, "domain_names", FIGURE_DIRECTORY)
 
     compare_follower_number(fb_group_df_climate, fb_group_df_health, 
                             fb_group_df_covid19, FIGURE_DIRECTORY)
