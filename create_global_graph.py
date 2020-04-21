@@ -51,29 +51,9 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
     return fb_group_df
 
 
-def aggregate_domain(domain_df_climate, domain_df_health, domain_df_covid19):
-
-    domain_df = domain_df_climate.merge(domain_df_health,
-                                        left_on='domain_name', right_on='domain_name', 
-                                        how='outer', suffixes=('_climate', '_health'))
-
-    domain_df = domain_df.merge(domain_df_covid19,
-                                left_on='domain_name', right_on='domain_name', 
-                                how='outer')
-    domain_df = domain_df.rename(columns={"nb_fake_news_shared": "nb_fake_news_shared_covid"})
-
-    domain_df["nb_fake_news_shared"] = (domain_df["nb_fake_news_shared_climate"].fillna(0).astype(int) + 
-                                        domain_df["nb_fake_news_shared_health"].fillna(0).astype(int) +
-                                        domain_df["nb_fake_news_shared_covid"].fillna(0).astype(int))
-
-    domain_df = domain_df[["domain_name", "nb_fake_news_shared"]]
-
-    return domain_df
-
-
 def aggregate_posts(posts_df_climate, posts_df_health, posts_df_covid19):
     posts_df = pd.concat([posts_df_climate, posts_df_health, posts_df_covid19])
-    posts_df = posts_df[["account_id", "domain_name"]].drop_duplicates()
+    posts_df = posts_df[["account_id", "url"]].drop_duplicates()
     return posts_df
 
 
@@ -90,7 +70,7 @@ def color_gradient(ratio_climate, ratio_health, NODE_COLOR):
     return mpl.colors.to_hex(gradient_color)
 
 
-def create_global_graph(posts_df, fb_group_df, domain_df, NODE_COLOR, GRAPH_DIRECTORY):
+def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY):
     bipartite_graph = nx.Graph()
 
     for _, row in fb_group_df.iterrows():
@@ -100,21 +80,20 @@ def create_global_graph(posts_df, fb_group_df, domain_df, NODE_COLOR, GRAPH_DIRE
                                  nb_fake_news_shared=row['nb_fake_news_shared'],
                                  nb_followers=row['account_subscriber_count'],
                                  color=color_gradient(row['ratio_climate'], 
-                                                      row['ratio_health'], NODE_COLOR)
+                                                      row['ratio_health'], NODE_COLOR),
+                                 size=np.sqrt(row['nb_fake_news_shared'])
                                  )
 
-    for _, row in domain_df.iterrows():
-        bipartite_graph.add_node(row['domain_name'], 
-                                 type="domain_name",
-                                 nb_fake_news_shared=row['nb_fake_news_shared'],
-                                 color="#FFF"
-                                 )
+    bipartite_graph.add_nodes_from(posts_df["url"].tolist())
     
-    bipartite_graph.add_edges_from(list(posts_df[['domain_name', 'account_id']]\
+    bipartite_graph.add_edges_from(list(posts_df[['account_id', 'url']]\
                                    .itertuples(index=False, name=None)))
 
-    bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "global_graph.gexf")
-    nx.write_gexf(bipartite_graph, bipartite_graph_path, encoding="utf-8")
+    monopartite_graph = bipartite.projected_graph(bipartite_graph, 
+                                                 fb_group_df['account_id'].unique().tolist())
+
+    monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "global_graph.gexf")
+    nx.write_gexf(monopartite_graph, monopartite_graph_path, encoding="utf-8")
 
 
 def create_venn_diagram(subsets, title, FIGURE_DIRECTORY):
@@ -202,33 +181,25 @@ if __name__ == "__main__":
 
     NODE_COLOR = {
         "climate": "#6666FF",
-        "health": "#66FF66",
+        "health": "#FFFF66",
         "COVID-19": "#FF6666"
         }
 
-    posts_df_climate, fb_group_df_climate, domain_df_climate = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="climate")
-    posts_df_health,  fb_group_df_health,  domain_df_health  = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="health")
-    posts_df_covid19, fb_group_df_covid19, domain_df_covid19 = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="COVID-19")
+    posts_df_climate, fb_group_df_climate, _ = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="climate")
+    posts_df_health,  fb_group_df_health,  _  = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="health")
+    posts_df_covid19, fb_group_df_covid19, _ = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="COVID-19")
 
     fb_group_df = aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covid19)
-    domain_df = aggregate_domain(domain_df_climate, domain_df_health, domain_df_covid19)
     posts_df = aggregate_posts(posts_df_climate, posts_df_health, posts_df_covid19)
 
-    create_global_graph(posts_df, fb_group_df, domain_df, NODE_COLOR, GRAPH_DIRECTORY)
+    create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY)
 
-    group_subsets = [
-        set(fb_group_df_climate['account_id'].values),
-        set(fb_group_df_health['account_id'].values),
-        set(fb_group_df_covid19['account_id'].values)
-        ]
-    create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY)
-
-    # domain_subsets = [
-    #     set(domain_df_climate['domain_name'].values),
-    #     set(domain_df_health['domain_name'].values),
-    #     set(domain_df_covid19['domain_name'].values)
+    # group_subsets = [
+    #     set(fb_group_df_climate['account_id'].values),
+    #     set(fb_group_df_health['account_id'].values),
+    #     set(fb_group_df_covid19['account_id'].values)
     #     ]
-    # create_venn_diagram(domain_subsets, "domain_names", FIGURE_DIRECTORY)
+    # create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY)
 
-    compare_follower_number(fb_group_df_climate, fb_group_df_health, 
-                            fb_group_df_covid19, FIGURE_DIRECTORY)
+    # compare_follower_number(fb_group_df_climate, fb_group_df_health, 
+    #                         fb_group_df_covid19, FIGURE_DIRECTORY)
