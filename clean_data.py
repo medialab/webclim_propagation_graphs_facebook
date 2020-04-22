@@ -5,6 +5,7 @@ import pandas as pd
 import ural
 
 import os
+import sys
 
 
 def import_data(RAW_DATA_DIRECTORY):
@@ -68,8 +69,19 @@ def save_data(url_df, SCIENTIFIC_TOPIC, CLEAN_DATA_DIRECTORY):
 
 
 if __name__ == "__main__":
-    # choose a scientific topic between: "health", "climate" or "COVID-19":
-    SCIENTIFIC_TOPIC = "COVID-19"
+
+    if len(sys.argv) == 2:
+        if sys.argv[1] in ["COVID-19", "health", "climate"]:
+            SCIENTIFIC_TOPIC = sys.argv[1]
+        else:
+            print("Please enter only 'COVID-19', 'health' or 'climate' as argument.")
+            exit()
+    elif len(sys.argv) == 1:
+        SCIENTIFIC_TOPIC = "COVID-19"
+        print("The topic 'COVID-19' has been chosen by default.")
+    else:
+        print("Please enter only one argument.")
+        exit()
 
     RAW_DATA_DIRECTORY = "raw_data"
     CLEAN_DATA_DIRECTORY = "clean_data"
@@ -77,3 +89,4 @@ if __name__ == "__main__":
     url_df, fact_check_df = import_data(RAW_DATA_DIRECTORY)
     url_df = clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC)
     save_data(url_df, SCIENTIFIC_TOPIC, CLEAN_DATA_DIRECTORY)
+    print("The 'fake_url_{}.csv' file has been saved in the 'clean_data' folder.".format(SCIENTIFIC_TOPIC))
