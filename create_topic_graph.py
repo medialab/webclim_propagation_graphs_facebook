@@ -10,6 +10,7 @@ import networkx as nx
 from networkx.algorithms import bipartite
 
 import os
+import sys
 
 
 def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
@@ -111,16 +112,23 @@ def create_graph(posts_df, fb_group_df, domain_df,
 
     bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, SCIENTIFIC_TOPIC + ".gexf")
     nx.write_gexf(bipartite_graph, bipartite_graph_path, encoding="utf-8")
-    
-#    monopartite_graph = bipartite.projected_graph(bipartite_graph, 
-#                                                  fb_group_df['account_id'].unique().tolist())
 
     return bipartite_graph
 
 
 if __name__ == "__main__":
-    # choose a scientific topic between: "health", "climate" or "COVID-19":
-    SCIENTIFIC_TOPIC = "COVID-19"
+    if len(sys.argv) == 2:
+        if sys.argv[1] in ["COVID-19", "health", "climate"]:
+            SCIENTIFIC_TOPIC = sys.argv[1]
+        else:
+            print("Please enter only 'COVID-19', 'health' or 'climate' as argument.")
+            exit()
+    elif len(sys.argv) == 1:
+        SCIENTIFIC_TOPIC = "COVID-19"
+        print("The topic 'COVID-19' has been chosen by default.")
+    else:
+        print("Please enter only one argument.")
+        exit()
 
     CLEAN_DATA_DIRECTORY = "clean_data"
     GRAPH_DIRECTORY = "graph"
@@ -131,3 +139,4 @@ if __name__ == "__main__":
 
     bipartite_graph = create_graph(posts_df, fb_group_df, domain_df, 
                                    GRAPH_DIRECTORY, SCIENTIFIC_TOPIC)
+    print("The '{}.gexf' graph has been saved in the 'graph' folder.".format(SCIENTIFIC_TOPIC))

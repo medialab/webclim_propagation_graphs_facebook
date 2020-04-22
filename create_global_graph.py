@@ -92,7 +92,7 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY):
     monopartite_graph = bipartite.projected_graph(bipartite_graph, 
                                                  fb_group_df['account_id'].unique().tolist())
 
-    monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "global_graph.gexf")
+    monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "global.gexf")
     nx.write_gexf(monopartite_graph, monopartite_graph_path, encoding="utf-8")
 
 
@@ -120,22 +120,18 @@ def compare_follower_number(fb_group_df_climate, fb_group_df_health,
     climate = set(fb_group_df_climate['account_id'].values) - \
         set(fb_group_df_health['account_id'].values).union(set(fb_group_df_covid19['account_id'].values))
     climate_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate)]['account_subscriber_count']
-    print("Median follower count for climate only: ", np.median(climate_nb))
 
     climate_health = set(fb_group_df_climate['account_id'].values) - climate \
         - set(fb_group_df_covid19['account_id'].values)
     climate_health_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health)]['account_subscriber_count']
-    print("Median follower count for climate and health: ", np.median(climate_health_nb))
 
     climate_covid = set(fb_group_df_climate['account_id'].values) - climate \
         - set(fb_group_df_health['account_id'].values)
     climate_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_covid)]['account_subscriber_count']
-    print("Median follower count for climate and covid: ", np.median(climate_covid_nb))
 
     climate_health_covid = set(fb_group_df_climate['account_id'].values)\
         .intersection(set(fb_group_df_covid19['account_id'].values), set(fb_group_df_health['account_id'].values))
     climate_health_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health_covid)]['account_subscriber_count']
-    print("Median follower count for climate and covid: ", np.median(climate_health_covid_nb))
 
     plt.figure(figsize=[9, 6])
 
@@ -193,13 +189,17 @@ if __name__ == "__main__":
     posts_df = aggregate_posts(posts_df_climate, posts_df_health, posts_df_covid19)
 
     create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY)
+    print("The 'global.gexf' graph has been saved in the 'graph' folder.")
 
-    # group_subsets = [
-    #     set(fb_group_df_climate['account_id'].values),
-    #     set(fb_group_df_health['account_id'].values),
-    #     set(fb_group_df_covid19['account_id'].values)
-    #     ]
-    # create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY)
+    group_subsets = [
+        set(fb_group_df_climate['account_id'].values),
+        set(fb_group_df_health['account_id'].values),
+        set(fb_group_df_covid19['account_id'].values)
+        ]
+    create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY)
+    print("The 'venn_diagram_facebook_groups.png' figure has been saved in the 'figure' folder.")
 
-    # compare_follower_number(fb_group_df_climate, fb_group_df_health, 
-    #                         fb_group_df_covid19, FIGURE_DIRECTORY)
+    compare_follower_number(fb_group_df_climate, fb_group_df_health, 
+                            fb_group_df_covid19, FIGURE_DIRECTORY)
+    print("The 'comparison_follower_number.png' figure has been saved in the 'figure' folder.")
+
