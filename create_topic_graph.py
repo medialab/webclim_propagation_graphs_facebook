@@ -40,6 +40,10 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
     # We merge the two dataframes to get the 'field' column back:
     posts_df = posts_df.merge(clean_url_df[['url', 'domain_name']], 
                           left_on='url', right_on='url', how='left')
+
+    # We remove the plateforms from the analysis:
+    plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com"]
+    posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
     
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the number of followers
@@ -52,15 +56,16 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
     temp = posts_df.groupby('account_id')['url'].apply(list)\
                 .to_frame().reset_index()
     fb_group_df = fb_group_df.merge(temp, left_on='account_id', right_on='account_id', how='left')
-    fb_group_df = fb_group_df.rename(columns={"url": "fake_news_shared"})
-    fb_group_df['nb_fake_news_shared'] = fb_group_df['fake_news_shared'].apply(lambda x:len(x))
+    fb_group_df['nb_fake_news_shared'] = fb_group_df['url'].apply(lambda x:len(x))
 
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the fake news URL shared by this domain -> node size
-    domain_df = posts_df.groupby('domain_name')['url'].apply(list)\
+    domain_df = clean_url_df.groupby('domain_name')['url'].apply(list)\
                     .to_frame().reset_index()
-    domain_df = domain_df.rename(columns={"url": "fake_news_shared"})
-    domain_df['nb_fake_news_shared'] = domain_df['fake_news_shared'].apply(lambda x:len(x))
+    domain_df['nb_fake_news_shared'] = domain_df['url'].apply(lambda x:len(x))
+
+    domain_df = domain_df.merge(posts_df[['domain_name']].drop_duplicates(),
+                                left_on='domain_name', right_on='domain_name', how='right')
     
     return posts_df, fb_group_df, domain_df
 
@@ -70,11 +75,13 @@ def print_statistics(posts_df):
 
     print()
     print("The top 5 of facebook groups sharing the more fake URLs:\n")
-    print(posts_df['account_name'].value_counts().head())
+    print(fb_group_df[["account_name", "nb_fake_news_shared"]]\
+        .sort_values(by='nb_fake_news_shared', ascending=False).head())
 
     print()
     print("The top 5 of domains sharing the more fake URLs:\n")
-    print(posts_df['domain_name'].value_counts().head())
+    print(domain_df[["domain_name", "nb_fake_news_shared"]]\
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(30))
 
     # print("\n\nThe top 5 of facebook groups with the more followers:\n")
     # temp = posts_df[['account_name', 'account_subscriber_count']].drop_duplicates()
