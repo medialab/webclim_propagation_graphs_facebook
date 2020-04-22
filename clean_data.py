@@ -31,8 +31,8 @@ def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
     # keeping only the first, i.e. the more recent ocurrence.
     url_df = url_df.drop_duplicates(subset = "url", keep = "first")
 
-    # Filter the URLs to keep only the ones flagged as False:
-    url_df = url_df[(url_df['Flag as'] == 'False')]
+    # Filter the URLs to keep only the ones flagged as False or equivalent:
+    url_df = url_df[(url_df['Flag as'].isin(['False', 'Partly false', 'Misleading', 'False headline']))]
 
     # Use a REGEX to get the article field from the fact-check url website:
     # if the fact-check url starts with 'https://climatefeedback.org' -> 'climate' article
@@ -55,6 +55,10 @@ def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
                                                                      strip_protocol=False, 
                                                                      strip_trailing_slash=True))
     url_df['domain_name'] = url_df['url'].apply(lambda x: ural.get_domain_name(x))
+
+    # Remove the plateforms from the analysis:
+    plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com"]
+    url_df = url_df[~url_df['domain_name'].isin(plateforms)]
 
     url_df = url_df[['url', 'Item reviewed', 'field', 'domain_name']]
     

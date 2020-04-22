@@ -40,10 +40,6 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
     # We merge the two dataframes to get the 'field' column back:
     posts_df = posts_df.merge(clean_url_df[['url', 'domain_name']], 
                           left_on='url', right_on='url', how='left')
-
-    # We remove the plateforms from the analysis:
-    plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com"]
-    posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
     
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the number of followers
@@ -76,12 +72,12 @@ def print_statistics(posts_df):
     print()
     print("The top 5 of facebook groups sharing the more fake URLs:\n")
     print(fb_group_df[["account_name", "nb_fake_news_shared"]]\
-        .sort_values(by='nb_fake_news_shared', ascending=False).head())
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(10))
 
     print()
     print("The top 5 of domains sharing the more fake URLs:\n")
     print(domain_df[["domain_name", "nb_fake_news_shared"]]\
-        .sort_values(by='nb_fake_news_shared', ascending=False).head(30))
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(10))
 
     # print("\n\nThe top 5 of facebook groups with the more followers:\n")
     # temp = posts_df[['account_name', 'account_subscriber_count']].drop_duplicates()
