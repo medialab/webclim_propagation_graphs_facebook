@@ -57,7 +57,7 @@ def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
     url_df['domain_name'] = url_df['url'].apply(lambda x: ural.get_domain_name(x))
 
     # Remove the plateforms from the analysis:
-    plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com"]
+    plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com", "instagram.com"]
     url_df = url_df[~url_df['domain_name'].isin(plateforms)]
 
     url_df = url_df[['url', 'Item reviewed', 'field', 'domain_name']]
