@@ -23,18 +23,23 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
                                     left_on='account_id', right_on='account_id', 
                                     how='outer')
     fb_group_df = fb_group_df.rename(columns={"account_subscriber_count": "account_subscriber_count_covid",
-                                            "nb_fake_news_shared": "nb_fake_news_shared_covid",
+                                            "nb_fake_news_shared": "nb_fake_news_shared_covid_19",
                                             "account_name": "account_name_covid"})
 
     fb_group_df["nb_fake_news_shared"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) + 
                                         fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) +
-                                        fb_group_df["nb_fake_news_shared_covid"].fillna(0).astype(int))
+                                        fb_group_df["nb_fake_news_shared_covid_19"].fillna(0).astype(int))
 
     fb_group_df["ratio_climate"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) /
                                     fb_group_df["nb_fake_news_shared"])
 
     fb_group_df["ratio_health"] = (fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) /
                                     fb_group_df["nb_fake_news_shared"])
+
+    # fb_group_df['main_topic'] = fb_group_df[["nb_fake_news_shared_climate", 
+    #                                         "nb_fake_news_shared_health", 
+    #                                         "nb_fake_news_shared_covid_19"]].idxmax(axis=1)
+    # fb_group_df['main_topic'] = fb_group_df['main_topic'].apply(lambda x: x[20:])
 
     fb_group_df["account_subscriber_count"] = fb_group_df[["account_subscriber_count_climate", 
                                                         "account_subscriber_count_health",
@@ -45,9 +50,12 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
                                                                 row['account_name_covid']], axis=1)
     fb_group_df['account_name'] = fb_group_df['account_name'].apply(lambda x: [i for i in x if type(i)==str][0])
 
+    # fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
+    #                            "nb_fake_news_shared", "main_topic"]]
+
     fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
                                "nb_fake_news_shared", "ratio_climate", "ratio_health"]]
-
+                               
     return fb_group_df
 
 
@@ -76,12 +84,12 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY):
     for _, row in fb_group_df.iterrows():
         bipartite_graph.add_node(int(row['account_id']),
                                  label=row['account_name'],
-                                 type="facebook_account_or_page",
                                  nb_fake_news_shared=row['nb_fake_news_shared'],
                                  nb_followers=row['account_subscriber_count'],
                                  color=color_gradient(row['ratio_climate'], 
                                                       row['ratio_health'], NODE_COLOR),
                                  size=np.sqrt(row['nb_fake_news_shared'])
+                                #  main_topic=row['main_topic']
                                  )
 
     bipartite_graph.add_nodes_from(posts_df["url"].tolist())
@@ -121,17 +129,22 @@ def compare_follower_number(fb_group_df_climate, fb_group_df_health,
         set(fb_group_df_health['account_id'].values).union(set(fb_group_df_covid19['account_id'].values))
     climate_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate)]['account_subscriber_count']
 
-    climate_health = set(fb_group_df_climate['account_id'].values) - climate \
-        - set(fb_group_df_covid19['account_id'].values)
-    climate_health_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health)]['account_subscriber_count']
-
     climate_covid = set(fb_group_df_climate['account_id'].values) - climate \
         - set(fb_group_df_health['account_id'].values)
     climate_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_covid)]['account_subscriber_count']
 
+    climate_health = set(fb_group_df_climate['account_id'].values) - climate \
+        - set(fb_group_df_covid19['account_id'].values)
+    climate_health_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health)]['account_subscriber_count']
+
     climate_health_covid = set(fb_group_df_climate['account_id'].values)\
         .intersection(set(fb_group_df_covid19['account_id'].values), set(fb_group_df_health['account_id'].values))
     climate_health_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health_covid)]['account_subscriber_count']
+
+    print(np.median(climate_health_covid_nb))
+    print(np.median(climate_covid_nb))
+    print(np.median(climate_health_nb))
+    print(np.median(climate_nb))
 
     plt.figure(figsize=[9, 6])
 
@@ -140,15 +153,15 @@ def compare_follower_number(fb_group_df_climate, fb_group_df_health,
     plt.plot([-.2, .2], [np.median(climate_health_covid_nb), np.median(climate_health_covid_nb)],
             color='grey', linestyle='--')
 
-    plt.plot(np.random.normal(1, 0.04, size=len(climate_health_nb)), climate_health_nb, 
-            color='green', marker='.', linestyle='', alpha=0.5)
-    plt.plot([.8, 1.2], [np.median(climate_health_nb), np.median(climate_health_nb)],
-            color='green', linestyle='--')
-
-    plt.plot(np.random.normal(2, 0.04, size=len(climate_covid_nb)), climate_covid_nb, 
+    plt.plot(np.random.normal(1, 0.04, size=len(climate_covid_nb)), climate_covid_nb, 
             color='violet', marker='.', linestyle='', alpha=0.5)
-    plt.plot([1.8, 2.2], [np.median(climate_covid_nb), np.median(climate_covid_nb)],
+    plt.plot([.8, 1.2], [np.median(climate_covid_nb), np.median(climate_covid_nb)],
             color='violet', linestyle='--')
+
+    plt.plot(np.random.normal(2, 0.04, size=len(climate_health_nb)), climate_health_nb, 
+            color='green', marker='.', linestyle='', alpha=0.5)
+    plt.plot([1.8, 2.2], [np.median(climate_health_nb), np.median(climate_health_nb)],
+            color='green', linestyle='--')
 
     plt.plot(np.random.normal(3, 0.04, size=len(climate_nb)), climate_nb,
             color='blue', marker='.', linestyle='', alpha=0.5)
@@ -159,8 +172,8 @@ def compare_follower_number(fb_group_df_climate, fb_group_df_health,
 
     plt.ylabel("Nombre d'abonnés\n(échelle logarithmique)")
     plt.xticks(np.arange(4), ('Groupes partageant\ndes fake news\nclimat, santé et Covid-19',
-                            'Groupes partageant\ndes fake news\nclimat et santé',
                             'Groupes partageant\ndes fake news\nclimat et Covid-19',
+                            'Groupes partageant\ndes fake news\nclimat et santé',
                             'Groupes partageant\ndes fake news\nuniquement climat'))
     plt.xlim(-0.5, 3.5)
     plt.tight_layout()
