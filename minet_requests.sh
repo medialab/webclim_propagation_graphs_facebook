@@ -31,6 +31,6 @@ else
     echo "Nothing to do, the output file already exists"
 fi
 
-# The climate command has taken 58 minutes to run on my computer (16 April, 313 URLs).
-# The COVID-19 command has taken 44 minutes to run on my computer (16 April, 244 URLs).
-# The health command has taken 1 hour and 54 minutes to run on my computer (16 April, 612 URLs).
+# The climate command has taken 47 minutes to run on my computer (23 April, 276 URLs).
+# The COVID-19 command has taken 56 minutes to run on my computer (23 April, 328 URLs).
+# The health command has taken 1 hour and 52 minutes to run on my computer (23 April, 676 URLs).
