@@ -40,6 +40,10 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
     # We merge the two dataframes to get the 'field' column back:
     posts_df = posts_df.merge(clean_url_df[['url', 'domain_name']], 
                           left_on='url', right_on='url', how='left')
+
+    # Remove the plateforms from the analysis:
+    plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com", "instagram.com"]
+    posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
     
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the number of followers
@@ -66,18 +70,18 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
     return posts_df, fb_group_df, domain_df
 
 
-def print_statistics(posts_df):
+def print_statistics(fb_group_df, domain_df):
     """We print a few interesting statistics"""
 
     print()
-    print("The top 5 of facebook groups sharing the more fake URLs:\n")
+    print("The top 10 of facebook groups sharing the more fake URLs:\n")
     print(fb_group_df[["account_name", "nb_fake_news_shared"]]\
-        .sort_values(by='nb_fake_news_shared', ascending=False).head(10))
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(10).to_string(index=False))
 
     print()
-    print("The top 5 of domains sharing the more fake URLs:\n")
+    print("The top 10 of domains sharing the more fake URLs:\n")
     print(domain_df[["domain_name", "nb_fake_news_shared"]]\
-        .sort_values(by='nb_fake_news_shared', ascending=False).head(10))
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(10).to_string(index=False))
 
     # print("\n\nThe top 5 of facebook groups with the more followers:\n")
     # temp = posts_df[['account_name', 'account_subscriber_count']].drop_duplicates()
@@ -138,7 +142,7 @@ if __name__ == "__main__":
 
     posts_df, fb_group_df, domain_df = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC)
 
-    print_statistics(posts_df)
+    print_statistics(fb_group_df, domain_df)
 
     bipartite_graph = create_graph(posts_df, fb_group_df, domain_df, 
                                    GRAPH_DIRECTORY, SCIENTIFIC_TOPIC)
