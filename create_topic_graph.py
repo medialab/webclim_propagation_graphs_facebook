@@ -11,6 +11,7 @@ from networkx.algorithms import bipartite
 
 import os
 import sys
+import time
 
 
 def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
@@ -136,6 +137,12 @@ if __name__ == "__main__":
     else:
         print("Please enter only one argument.")
         exit()
+
+    if len(sys.argv) == 3:
+        DATE = sys.argv[2]
+    else:
+        DATE = time.strftime("%d,%m,%Y").replace(",", "_")
+        print("The topic '{}' has been chosen by default.".format(DATE))
 
     CLEAN_DATA_DIRECTORY = "clean_data"
     GRAPH_DIRECTORY = "graph"
