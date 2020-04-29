@@ -1,21 +1,25 @@
 import json
 import sys
+import time
 
 
 if __name__ == "__main__":
 
-    if len(sys.argv) == 2:
-        if sys.argv[1] in ["COVID-19", "health", "climate", "global"]:
+    if len(sys.argv) >= 2:
+        if sys.argv[1] in ["COVID-19", "health", "climate"]:
             SCIENTIFIC_TOPIC = sys.argv[1]
         else:
-            print("Please enter only 'COVID-19', 'health', 'climate' or 'global' as argument.")
+            print("Please enter only 'COVID-19', 'health' or 'climate' as argument.")
             exit()
-    elif len(sys.argv) == 1:
+    else:
         SCIENTIFIC_TOPIC = "COVID-19"
         print("The topic 'COVID-19' has been chosen by default.")
+
+    if len(sys.argv) >= 3:
+        DATE = sys.argv[2]
     else:
-        print("Please enter only one argument.")
-        exit()
+        DATE = time.strftime("%d,%m,%Y").replace(",", "_")
+        print("The date '{}' has been chosen by default.".format(DATE))
 
     NODE_COLOR = {
         "climate": "#66F",
@@ -23,7 +27,7 @@ if __name__ == "__main__":
         "COVID-19": "#F66"
         }
 
-    with open('./bundle/' + SCIENTIFIC_TOPIC.capitalize() + '.json') as input_file:
+    with open('./bundle/BUNDLE - ' + SCIENTIFIC_TOPIC.capitalize() + ' ' + DATE + '.json') as input_file:
         graph = json.load(input_file)
 
     if SCIENTIFIC_TOPIC == "global":
@@ -35,8 +39,8 @@ if __name__ == "__main__":
         graph["model"]["nodeAttributes"][0]["modalities"]["facebook_account_or_page"]["color"] = NODE_COLOR[SCIENTIFIC_TOPIC]
         graph["model"]["nodeAttributes"][0]["modalities"]["domain_name"]["color"] = "#999"
 
-    with open('./bundle/' + SCIENTIFIC_TOPIC.capitalize() + '_fixed.json', "w") as output_file:
+    with open('./bundle/' + SCIENTIFIC_TOPIC + '_' + DATE + '.json', "w") as output_file:
         json.dump(graph, output_file)
 
-    print("The '{}_fixed.json' bundle has been saved in the 'bundle' folder."\
-        .format(SCIENTIFIC_TOPIC.capitalize()))
+    print("The '{}_{}.json' bundle has been saved in the 'bundle' folder."\
+        .format(SCIENTIFIC_TOPIC, DATE))
