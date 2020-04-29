@@ -164,6 +164,3 @@ if __name__ == "__main__":
             [fb_group_df_climate["account_id"].isin(generalist_groups)]\
             .sort_values(by='account_subscriber_count', ascending=False).head(10))
 
-    compare_follower_number(fb_group_df_climate, fb_group_df_health, 
-                            fb_group_df_covid19, FIGURE_DIRECTORY)
-    print("The 'comparison_follower_number.png' figure has been saved in the 'figure' folder.")
