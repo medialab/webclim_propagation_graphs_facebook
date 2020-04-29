@@ -6,10 +6,10 @@ import time
 if __name__ == "__main__":
 
     if len(sys.argv) >= 2:
-        if sys.argv[1] in ["COVID-19", "health", "climate"]:
+        if sys.argv[1] in ["COVID-19", "health", "climate", "global"]:
             SCIENTIFIC_TOPIC = sys.argv[1]
         else:
-            print("Please enter only 'COVID-19', 'health' or 'climate' as argument.")
+            print("Please enter only 'COVID-19', 'health', 'climate' or 'global' as argument.")
             exit()
     else:
         SCIENTIFIC_TOPIC = "COVID-19"
