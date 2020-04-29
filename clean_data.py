@@ -61,10 +61,9 @@ def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
     plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
     url_df = url_df[~url_df['domain_name'].isin(plateforms)]
 
-    # Remove the plateforms from the analysis:
-    crowdtangle_problem = ["thetruthseeker.co.uk", "thegatewaypundit.com", 
-                           "breakingchristiannews.com", "warwickhughes.com"]
-    url_df = url_df[~url_df['domain_name'].isin(crowdtangle_problem)]
+    # Remove the url with parameters from the analysis because CT return wrong results for them:
+    url_df['parameter_in_url'] = url_df['url'].apply(lambda x: '?' in x)
+    url_df = url_df[url_df['parameter_in_url']==False]
 
     url_df = url_df[['url', 'Item reviewed', 'field', 'domain_name']]
     

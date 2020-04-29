@@ -9,6 +9,8 @@ import networkx as nx
 from networkx.algorithms import bipartite
 
 import os
+import sys
+import time
 
 from create_topic_graph import clean_data
 
@@ -78,7 +80,7 @@ def color_gradient(ratio_climate, ratio_health, NODE_COLOR):
     return mpl.colors.to_hex(gradient_color)
 
 
-def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY):
+def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE):
     bipartite_graph = nx.Graph()
 
     for _, row in fb_group_df.iterrows():
@@ -100,7 +102,7 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY):
     monopartite_graph = bipartite.projected_graph(bipartite_graph, 
                                                  fb_group_df['account_id'].unique().tolist())
 
-    monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "global.gexf")
+    monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "global_{}.gexf".format(DATE))
     nx.write_gexf(monopartite_graph, monopartite_graph_path, encoding="utf-8")
 
 
@@ -122,67 +124,13 @@ def create_venn_diagram(subsets, title, FIGURE_DIRECTORY):
     plt.savefig(diagram_path)
 
 
-def compare_follower_number(fb_group_df_climate, fb_group_df_health, 
-                            fb_group_df_covid19, FIGURE_DIRECTORY):
-
-    climate = set(fb_group_df_climate['account_id'].values) - \
-        set(fb_group_df_health['account_id'].values).union(set(fb_group_df_covid19['account_id'].values))
-    climate_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate)]['account_subscriber_count']
-
-    climate_covid = set(fb_group_df_climate['account_id'].values) - climate \
-        - set(fb_group_df_health['account_id'].values)
-    climate_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_covid)]['account_subscriber_count']
-
-    climate_health = set(fb_group_df_climate['account_id'].values) - climate \
-        - set(fb_group_df_covid19['account_id'].values)
-    climate_health_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health)]['account_subscriber_count']
-
-    climate_health_covid = set(fb_group_df_climate['account_id'].values)\
-        .intersection(set(fb_group_df_covid19['account_id'].values), set(fb_group_df_health['account_id'].values))
-    climate_health_covid_nb = fb_group_df_climate[fb_group_df_climate['account_id'].isin(climate_health_covid)]['account_subscriber_count']
-
-    print(np.median(climate_health_covid_nb))
-    print(np.median(climate_covid_nb))
-    print(np.median(climate_health_nb))
-    print(np.median(climate_nb))
-
-    plt.figure(figsize=[9, 6])
-
-    plt.plot(np.random.normal(0, 0.04, size=len(climate_health_covid_nb)), climate_health_covid_nb, 
-            color='grey', marker='.', linestyle='', alpha=0.5)
-    plt.plot([-.2, .2], [np.median(climate_health_covid_nb), np.median(climate_health_covid_nb)],
-            color='grey', linestyle='--')
-
-    plt.plot(np.random.normal(1, 0.04, size=len(climate_covid_nb)), climate_covid_nb, 
-            color='violet', marker='.', linestyle='', alpha=0.5)
-    plt.plot([.8, 1.2], [np.median(climate_covid_nb), np.median(climate_covid_nb)],
-            color='violet', linestyle='--')
-
-    plt.plot(np.random.normal(2, 0.04, size=len(climate_health_nb)), climate_health_nb, 
-            color='green', marker='.', linestyle='', alpha=0.5)
-    plt.plot([1.8, 2.2], [np.median(climate_health_nb), np.median(climate_health_nb)],
-            color='green', linestyle='--')
-
-    plt.plot(np.random.normal(3, 0.04, size=len(climate_nb)), climate_nb,
-            color='blue', marker='.', linestyle='', alpha=0.5)
-    plt.plot([2.8, 3.2], [np.median(climate_nb), np.median(climate_nb)],
-            color='blue', linestyle='--')
-
-    plt.yscale('log')
-
-    plt.ylabel("Nombre d'abonnés\n(échelle logarithmique)")
-    plt.xticks(np.arange(4), ('Groupes partageant\ndes fake news\nclimat, santé et Covid-19',
-                            'Groupes partageant\ndes fake news\nclimat et Covid-19',
-                            'Groupes partageant\ndes fake news\nclimat et santé',
-                            'Groupes partageant\ndes fake news\nuniquement climat'))
-    plt.xlim(-0.5, 3.5)
-    plt.tight_layout()
-
-    figure_path = os.path.join(".", FIGURE_DIRECTORY, "comparison_follower_number.png")
-    plt.savefig(figure_path)
-
-
 if __name__ == "__main__":
+
+    if len(sys.argv) >= 2:
+        DATE = sys.argv[1]
+    else:
+        DATE = time.strftime("%d,%m,%Y").replace(",", "_")
+        print("The date '{}' has been chosen by default.".format(DATE))
 
     CLEAN_DATA_DIRECTORY = "clean_data"
     GRAPH_DIRECTORY = "graph"
@@ -194,15 +142,14 @@ if __name__ == "__main__":
         "COVID-19": "#FF6666"
         }
 
-    posts_df_climate, fb_group_df_climate, _ = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="climate")
-    posts_df_health,  fb_group_df_health,  _  = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="health")
-    posts_df_covid19, fb_group_df_covid19, _ = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC="COVID-19")
+    posts_df_climate, fb_group_df_climate, _ = clean_data(CLEAN_DATA_DIRECTORY, "climate", DATE)
+    posts_df_health,  fb_group_df_health, _  = clean_data(CLEAN_DATA_DIRECTORY, "health", DATE)
+    posts_df_covid19, fb_group_df_covid19, _ = clean_data(CLEAN_DATA_DIRECTORY, "COVID-19", DATE)
 
     fb_group_df = aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covid19)
     posts_df = aggregate_posts(posts_df_climate, posts_df_health, posts_df_covid19)
-
-    create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY)
-    print("The 'global.gexf' graph has been saved in the 'graph' folder.")
+    create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE)
+    print("The 'global_{}.gexf' graph has been saved in the 'graph' folder.".format(DATE))
 
     group_subsets = [
         set(fb_group_df_climate['account_id'].values),
@@ -212,7 +159,11 @@ if __name__ == "__main__":
     create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY)
     print("The 'venn_diagram_facebook_groups.png' figure has been saved in the 'figure' folder.")
 
+    generalist_groups = list(group_subsets[0].intersection(group_subsets[1], group_subsets[2]))
+    print(fb_group_df_climate[["account_id", "account_name", "account_subscriber_count"]]\
+            [fb_group_df_climate["account_id"].isin(generalist_groups)]\
+            .sort_values(by='account_subscriber_count', ascending=False).head(10))
+
     compare_follower_number(fb_group_df_climate, fb_group_df_health, 
                             fb_group_df_covid19, FIGURE_DIRECTORY)
     print("The 'comparison_follower_number.png' figure has been saved in the 'figure' folder.")
-

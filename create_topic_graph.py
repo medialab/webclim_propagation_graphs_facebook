@@ -8,23 +8,25 @@ import numpy as np
 import matplotlib as mpl
 import networkx as nx
 from networkx.algorithms import bipartite
+import ural
 
 import os
 import sys
 import time
 
 
-def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
+def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
     """Import and prepare the dataframe to be used to build the graphs"""
 
     posts_path = os.path.join(".", CLEAN_DATA_DIRECTORY, 
-                              "fake_posts_" + SCIENTIFIC_TOPIC + ".csv")
+                              "fake_posts_" + SCIENTIFIC_TOPIC + "_" + DATE + ".csv")
     posts_df = pd.read_csv(posts_path)
 
-    clean_url_path = os.path.join(".", CLEAN_DATA_DIRECTORY, 
-                                  "fake_url_" + SCIENTIFIC_TOPIC + ".csv")
-    clean_url_df = pd.read_csv(clean_url_path)
+    # Remove the url with parameters from the analysis because CT return wrong results for them:
+    posts_df['parameter_in_url'] = posts_df['url'].apply(lambda x: '?' in x)
+    posts_df = posts_df[posts_df['parameter_in_url']==False]
         
+    posts_df = posts_df[posts_df["platform"] == "Facebook"]
     posts_df = posts_df.dropna(subset=['account_id', 'url'])
     posts_df['account_id'] = posts_df['account_id'].apply(lambda x:int(x))
     
@@ -37,11 +39,8 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
     # We remove the facebook groups that have shared only one fake URL:
     vc = posts_df['account_id'].value_counts()
     posts_df = posts_df[posts_df['account_id'].isin(vc[vc > 1].index)]
-    
-    # We merge the two dataframes to get the 'field' column back:
-    posts_df = posts_df.merge(clean_url_df[['url', 'domain_name']], 
-                          left_on='url', right_on='url', how='left')
 
+    posts_df['domain_name'] = posts_df['url'].apply(lambda x: ural.get_domain_name(x))
     # Remove the plateforms from the analysis:
     plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com", "instagram.com"]
     posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
@@ -61,12 +60,10 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC):
 
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the fake news URL shared by this domain -> node size
-    domain_df = clean_url_df.groupby('domain_name')['url'].apply(list)\
+    domain_df = posts_df[['url', 'domain_name']].drop_duplicates()\
+                    .groupby('domain_name')['url'].apply(list)\
                     .to_frame().reset_index()
     domain_df['nb_fake_news_shared'] = domain_df['url'].apply(lambda x:len(x))
-
-    domain_df = domain_df.merge(posts_df[['domain_name']].drop_duplicates(),
-                                left_on='domain_name', right_on='domain_name', how='right')
     
     return posts_df, fb_group_df, domain_df
 
@@ -95,7 +92,7 @@ def print_statistics(fb_group_df, domain_df):
 
 
 def create_graph(posts_df, fb_group_df, domain_df, 
-                 GRAPH_DIRECTORY, SCIENTIFIC_TOPIC):
+                 GRAPH_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
     """Create the bipartite graph with the facebook groups and the domain names.
     The edges represent the fact that this group has shared the URL coming from this domain."""
 
@@ -118,39 +115,37 @@ def create_graph(posts_df, fb_group_df, domain_df,
     bipartite_graph.add_edges_from(list(posts_df[['domain_name', 'account_id']]\
                                    .itertuples(index=False, name=None)))
 
-    bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, SCIENTIFIC_TOPIC + ".gexf")
+    bipartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, SCIENTIFIC_TOPIC + "_" + DATE + ".gexf")
     nx.write_gexf(bipartite_graph, bipartite_graph_path, encoding="utf-8")
 
     return bipartite_graph
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2:
+
+    if len(sys.argv) >= 2:
         if sys.argv[1] in ["COVID-19", "health", "climate"]:
             SCIENTIFIC_TOPIC = sys.argv[1]
         else:
             print("Please enter only 'COVID-19', 'health' or 'climate' as argument.")
             exit()
-    elif len(sys.argv) == 1:
+    else:
         SCIENTIFIC_TOPIC = "COVID-19"
         print("The topic 'COVID-19' has been chosen by default.")
-    else:
-        print("Please enter only one argument.")
-        exit()
 
-    if len(sys.argv) == 3:
+    if len(sys.argv) >= 3:
         DATE = sys.argv[2]
     else:
         DATE = time.strftime("%d,%m,%Y").replace(",", "_")
-        print("The topic '{}' has been chosen by default.".format(DATE))
+        print("The date '{}' has been chosen by default.".format(DATE))
 
     CLEAN_DATA_DIRECTORY = "clean_data"
     GRAPH_DIRECTORY = "graph"
 
-    posts_df, fb_group_df, domain_df = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC)
+    posts_df, fb_group_df, domain_df = clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE)
 
     print_statistics(fb_group_df, domain_df)
 
     bipartite_graph = create_graph(posts_df, fb_group_df, domain_df, 
-                                   GRAPH_DIRECTORY, SCIENTIFIC_TOPIC)
-    print("The '{}.gexf' graph has been saved in the 'graph' folder.".format(SCIENTIFIC_TOPIC))
+                                   GRAPH_DIRECTORY, SCIENTIFIC_TOPIC, DATE)
+    print("The '{}_{}.gexf' graph has been saved in the 'graph' folder.".format(SCIENTIFIC_TOPIC, DATE))
