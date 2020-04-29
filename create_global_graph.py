@@ -32,16 +32,16 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
                                         fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) +
                                         fb_group_df["nb_fake_news_shared_covid_19"].fillna(0).astype(int))
 
-    fb_group_df["ratio_climate"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) /
-                                    fb_group_df["nb_fake_news_shared"])
+    # fb_group_df["ratio_climate"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) /
+    #                                 fb_group_df["nb_fake_news_shared"])
 
-    fb_group_df["ratio_health"] = (fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) /
-                                    fb_group_df["nb_fake_news_shared"])
+    # fb_group_df["ratio_health"] = (fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) /
+    #                                 fb_group_df["nb_fake_news_shared"])
 
-    # fb_group_df['main_topic'] = fb_group_df[["nb_fake_news_shared_climate", 
-    #                                         "nb_fake_news_shared_health", 
-    #                                         "nb_fake_news_shared_covid_19"]].idxmax(axis=1)
-    # fb_group_df['main_topic'] = fb_group_df['main_topic'].apply(lambda x: x[20:])
+    fb_group_df['main_topic'] = fb_group_df[["nb_fake_news_shared_climate", 
+                                            "nb_fake_news_shared_health", 
+                                            "nb_fake_news_shared_covid_19"]].idxmax(axis=1)
+    fb_group_df['main_topic'] = fb_group_df['main_topic'].apply(lambda x: x[20:])
 
     fb_group_df["account_subscriber_count"] = fb_group_df[["account_subscriber_count_climate", 
                                                         "account_subscriber_count_health",
@@ -52,11 +52,11 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
                                                                 row['account_name_covid']], axis=1)
     fb_group_df['account_name'] = fb_group_df['account_name'].apply(lambda x: [i for i in x if type(i)==str][0])
 
-    # fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
-    #                            "nb_fake_news_shared", "main_topic"]]
-
     fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
-                               "nb_fake_news_shared", "ratio_climate", "ratio_health"]]
+                               "nb_fake_news_shared", "main_topic"]]
+
+    # fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
+    #                            "nb_fake_news_shared", "ratio_climate", "ratio_health"]]
                                
     return fb_group_df
 
@@ -88,10 +88,10 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE
                                  label=row['account_name'],
                                  nb_fake_news_shared=row['nb_fake_news_shared'],
                                  nb_followers=row['account_subscriber_count'],
-                                 color=color_gradient(row['ratio_climate'], 
-                                                      row['ratio_health'], NODE_COLOR),
-                                 size=np.sqrt(row['nb_fake_news_shared'])
-                                #  main_topic=row['main_topic']
+                                #  color=color_gradient(row['ratio_climate'], 
+                                #                       row['ratio_health'], NODE_COLOR),
+                                #  size=np.sqrt(row['nb_fake_news_shared'])
+                                 main_topic=row['main_topic']
                                  )
 
     bipartite_graph.add_nodes_from(posts_df["url"].tolist())
@@ -106,21 +106,21 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE
     nx.write_gexf(monopartite_graph, monopartite_graph_path, encoding="utf-8")
 
 
-def create_venn_diagram(subsets, title, FIGURE_DIRECTORY):
+def create_venn_diagram(subsets, title, FIGURE_DIRECTORY, DATE):
 
     plt.figure()
 
     v = venn3(subsets=subsets, 
-              set_labels=('Climat', 'Santé', 'Covid-19'),
-              set_colors=([0.4, 0.4, 1, 1], [1, 1, 0.6, 1], [1, 0.4, 0.4, 1]),
+              set_labels=('Santé', 'Climat', 'Covid-19'),
+              set_colors=([1, 1, 0.6, 1], [0.4, 0.4, 1, 1], [1, 0.4, 0.4, 1]),
               alpha=1)
 
     v.get_patch_by_id('110').set_color([0.5, 1, 0.5, 1])
-    v.get_patch_by_id('011').set_color([1, 0.75, 0.5, 1])
-    v.get_patch_by_id('101').set_color([1, 0.4, 1, 1])
+    v.get_patch_by_id('101').set_color([1, 0.75, 0.5, 1])
+    v.get_patch_by_id('011').set_color([1, 0.4, 1, 1])
     v.get_patch_by_id('111').set_color([0.95, 0.95, 0.95, 1])
 
-    diagram_path = os.path.join(".", FIGURE_DIRECTORY, "venn_diagram_" + title + ".png")
+    diagram_path = os.path.join(".", FIGURE_DIRECTORY, "venn_diagram_" + title + '_' + DATE + ".png")
     plt.savefig(diagram_path)
 
 
@@ -142,9 +142,9 @@ if __name__ == "__main__":
         "COVID-19": "#FF6666"
         }
 
-    posts_df_climate, fb_group_df_climate, _ = clean_data(CLEAN_DATA_DIRECTORY, "climate", DATE)
-    posts_df_health,  fb_group_df_health, _  = clean_data(CLEAN_DATA_DIRECTORY, "health", DATE)
-    posts_df_covid19, fb_group_df_covid19, _ = clean_data(CLEAN_DATA_DIRECTORY, "COVID-19", DATE)
+    posts_df_climate, fb_group_df_climate, domain_df_climate = clean_data(CLEAN_DATA_DIRECTORY, "climate", DATE)
+    posts_df_health,  fb_group_df_health,  domain_df_health  = clean_data(CLEAN_DATA_DIRECTORY, "health", DATE)
+    posts_df_covid19, fb_group_df_covid19, domain_df_covid19 = clean_data(CLEAN_DATA_DIRECTORY, "COVID-19", DATE)
 
     fb_group_df = aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covid19)
     posts_df = aggregate_posts(posts_df_climate, posts_df_health, posts_df_covid19)
@@ -152,15 +152,28 @@ if __name__ == "__main__":
     print("The 'global_{}.gexf' graph has been saved in the 'graph' folder.".format(DATE))
 
     group_subsets = [
-        set(fb_group_df_climate['account_id'].values),
         set(fb_group_df_health['account_id'].values),
+        set(fb_group_df_climate['account_id'].values),
         set(fb_group_df_covid19['account_id'].values)
         ]
-    create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY)
-    print("The 'venn_diagram_facebook_groups.png' figure has been saved in the 'figure' folder.")
+    create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY, DATE)
+    print("The 'venn_diagram_facebook_groups_{}.png' figure has been saved in the 'figure' folder."\
+        .format(DATE))
 
     generalist_groups = list(group_subsets[0].intersection(group_subsets[1], group_subsets[2]))
-    print(fb_group_df_climate[["account_id", "account_name", "account_subscriber_count"]]\
-            [fb_group_df_climate["account_id"].isin(generalist_groups)]\
-            .sort_values(by='account_subscriber_count', ascending=False).head(10))
+    temp = fb_group_df_climate[fb_group_df_climate["account_id"].isin(generalist_groups)]
+    print(temp[["account_name", "account_subscriber_count"]]\
+            .sort_values(by='account_subscriber_count', ascending=False).head(10).to_string(index=False))
 
+    group_subsets = [
+        set(domain_df_climate['domain_name'].values),
+        set(domain_df_health['domain_name'].values),
+        set(domain_df_covid19['domain_name'].values)
+        ]
+    create_venn_diagram(group_subsets, "domain", FIGURE_DIRECTORY, DATE)
+    print("The 'venn_diagram_domain_{}.png' figure has been saved in the 'figure' folder."\
+        .format(DATE))
+
+    generalist_domains = list(group_subsets[0].intersection(group_subsets[1], group_subsets[2]))
+    print(generalist_domains)
+    
