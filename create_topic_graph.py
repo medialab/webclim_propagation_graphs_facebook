@@ -41,9 +41,14 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
     posts_df = posts_df[posts_df['account_id'].isin(vc[vc > 1].index)]
 
     posts_df['domain_name'] = posts_df['url'].apply(lambda x: ural.get_domain_name(x))
+
     # Remove the plateforms from the analysis:
     plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com", "instagram.com"]
     posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
+
+    # Remove the url with parameters from the analysis because CT return wrong results for them:
+    posts_df['parameter_in_url'] = posts_df['url'].apply(lambda x: '?' in x)
+    posts_df = posts_df[posts_df['parameter_in_url']==False]
     
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the number of followers
