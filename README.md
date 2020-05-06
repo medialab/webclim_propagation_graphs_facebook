@@ -63,7 +63,7 @@ python create_global_graph.py
 ```
 
 ### Minivan quick hack
-This little hack is to manipulate the colors put by minivan when creating the json bundle:
+This little hack is to manipulate the colors put by minivan when creating the json graph:
 ```
 python quick_fix_for_minivan_colors.py climate
 python quick_fix_for_minivan_colors.py health

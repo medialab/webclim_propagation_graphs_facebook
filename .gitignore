@@ -2,7 +2,14 @@
 *.csv
 *.gexf
 *.ipynb
+
 *.png
 !screenshot_graph.png
+
 __pycache__/*
+
 *.json
+!climate_28_04_2020.json
+!global_28_04_2020.json
+!COVID-19_28_04_2020.json
+

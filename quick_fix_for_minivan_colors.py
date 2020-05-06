@@ -27,7 +27,7 @@ if __name__ == "__main__":
         "COVID-19": "#F66"
         }
 
-    with open('./bundle/BUNDLE - ' + SCIENTIFIC_TOPIC.capitalize() + ' ' + DATE + '.json') as input_file:
+    with open('./graph/BUNDLE - ' + SCIENTIFIC_TOPIC.capitalize() + ' ' + DATE + '.json') as input_file:
         graph = json.load(input_file)
 
     if SCIENTIFIC_TOPIC == "global":
@@ -39,8 +39,8 @@ if __name__ == "__main__":
         graph["model"]["nodeAttributes"][0]["modalities"]["facebook_account_or_page"]["color"] = NODE_COLOR[SCIENTIFIC_TOPIC]
         graph["model"]["nodeAttributes"][0]["modalities"]["domain_name"]["color"] = "#999"
 
-    with open('./bundle/' + SCIENTIFIC_TOPIC + '_' + DATE + '.json', "w") as output_file:
+    with open('./graph/' + SCIENTIFIC_TOPIC + '_' + DATE + '.json', "w") as output_file:
         json.dump(graph, output_file)
 
-    print("The '{}_{}.json' bundle has been saved in the 'bundle' folder."\
+    print("The '{}_{}.json' final graph has been saved in the 'graph' folder."\
         .format(SCIENTIFIC_TOPIC, DATE))
