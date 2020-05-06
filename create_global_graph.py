@@ -32,11 +32,11 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
                                         fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) +
                                         fb_group_df["nb_fake_news_shared_covid_19"].fillna(0).astype(int))
 
-    # fb_group_df["ratio_climate"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) /
-    #                                 fb_group_df["nb_fake_news_shared"])
+    fb_group_df["ratio_climate"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) /
+                                    fb_group_df["nb_fake_news_shared"])
 
-    # fb_group_df["ratio_health"] = (fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) /
-    #                                 fb_group_df["nb_fake_news_shared"])
+    fb_group_df["ratio_health"] = (fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) /
+                                    fb_group_df["nb_fake_news_shared"])
 
     fb_group_df['main_topic'] = fb_group_df[["nb_fake_news_shared_climate", 
                                             "nb_fake_news_shared_health", 
@@ -53,10 +53,7 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
     fb_group_df['account_name'] = fb_group_df['account_name'].apply(lambda x: [i for i in x if type(i)==str][0])
 
     fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
-                               "nb_fake_news_shared", "main_topic"]]
-
-    # fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
-    #                            "nb_fake_news_shared", "ratio_climate", "ratio_health"]]
+                               "nb_fake_news_shared", "ratio_climate", "ratio_health", "main_topic"]]
                                
     return fb_group_df
 
