@@ -102,6 +102,8 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE
     monopartite_graph_path = os.path.join(".", GRAPH_DIRECTORY, "global_{}.gexf".format(DATE))
     nx.write_gexf(monopartite_graph, monopartite_graph_path, encoding="utf-8")
 
+    return monopartite_graph
+
 
 def create_venn_diagram(subsets, title, FIGURE_DIRECTORY, DATE):
 
@@ -119,6 +121,22 @@ def create_venn_diagram(subsets, title, FIGURE_DIRECTORY, DATE):
 
     diagram_path = os.path.join(".", FIGURE_DIRECTORY, "venn_diagram_" + title + '_' + DATE + ".png")
     plt.savefig(diagram_path)
+
+
+def print_statistics(G, fb_group_df, group_subsets):
+    centrality = nx.betweenness_centrality(G)
+    centrality_df = pd.DataFrame(list(centrality.items()), 
+                                 columns = ['account_id', 'betweenness_centrality'])
+    centrality_df["account_id"] = centrality_df["account_id"].astype(int)
+
+    fb_group_df = fb_group_df.merge(centrality_df, on="account_id", how="inner")
+
+    generalist_groups = list(group_subsets[0].intersection(group_subsets[1], group_subsets[2]))
+    generalist_group_df = fb_group_df[fb_group_df["account_id"].isin(generalist_groups)]
+    
+    print(generalist_group_df[["account_name", "betweenness_centrality", 
+                               "nb_fake_news_shared", "account_subscriber_count"]]\
+            .sort_values(by='betweenness_centrality', ascending=False).head(5).to_string(index=False))
 
 
 if __name__ == "__main__":
@@ -145,7 +163,7 @@ if __name__ == "__main__":
 
     fb_group_df = aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covid19)
     posts_df = aggregate_posts(posts_df_climate, posts_df_health, posts_df_covid19)
-    create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE)
+    G = create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE)
     print("The 'global_{}.gexf' graph has been saved in the 'graph' folder.".format(DATE))
 
     group_subsets = [
@@ -153,24 +171,19 @@ if __name__ == "__main__":
         set(fb_group_df_climate['account_id'].values),
         set(fb_group_df_covid19['account_id'].values)
         ]
+
     create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY, DATE)
     print("The 'venn_diagram_facebook_groups_{}.png' figure has been saved in the 'figure' folder."\
         .format(DATE))
 
-    generalist_groups = list(group_subsets[0].intersection(group_subsets[1], group_subsets[2]))
-    temp = fb_group_df_climate[fb_group_df_climate["account_id"].isin(generalist_groups)]
-    print(temp[["account_name", "account_subscriber_count"]]\
-            .sort_values(by='account_subscriber_count', ascending=False).head(10).to_string(index=False))
+    print_statistics(G, fb_group_df, group_subsets)
 
-    group_subsets = [
-        set(domain_df_climate['domain_name'].values),
-        set(domain_df_health['domain_name'].values),
-        set(domain_df_covid19['domain_name'].values)
-        ]
-    create_venn_diagram(group_subsets, "domain", FIGURE_DIRECTORY, DATE)
-    print("The 'venn_diagram_domain_{}.png' figure has been saved in the 'figure' folder."\
-        .format(DATE))
-
-    generalist_domains = list(group_subsets[0].intersection(group_subsets[1], group_subsets[2]))
-    print(generalist_domains)
+    # group_subsets = [
+    #     set(domain_df_climate['domain_name'].values),
+    #     set(domain_df_health['domain_name'].values),
+    #     set(domain_df_covid19['domain_name'].values)
+    #     ]
+    # create_venn_diagram(group_subsets, "domain", FIGURE_DIRECTORY, DATE)
+    # print("The 'venn_diagram_domain_{}.png' figure has been saved in the 'figure' folder."\
+    #     .format(DATE))
     
