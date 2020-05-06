@@ -5,6 +5,7 @@
 
 *.png
 !screenshot_graph.png
+!venn_diagram_facebook_groups_28_04_2020.png
 
 __pycache__/*
 
