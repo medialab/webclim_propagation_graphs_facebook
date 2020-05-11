@@ -54,6 +54,7 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
 
     fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
                                "nb_fake_news_shared", "ratio_climate", "ratio_health", "main_topic"]]
+    fb_group_df = fb_group_df.sort_values(by=["main_topic"])
                                
     return fb_group_df
 
@@ -61,6 +62,10 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
 def aggregate_posts(posts_df_climate, posts_df_health, posts_df_covid19):
     posts_df = pd.concat([posts_df_climate, posts_df_health, posts_df_covid19])
     posts_df = posts_df[["account_id", "url"]].drop_duplicates()
+    
+    posts_df = posts_df.merge(fb_group_df[["account_id", "main_topic"]],
+                         on="account_id", how="left")
+    posts_df = posts_df.sort_values(by=["main_topic"])
     return posts_df
 
 
@@ -176,7 +181,7 @@ if __name__ == "__main__":
     print("The 'venn_diagram_facebook_groups_{}.png' figure has been saved in the 'figure' folder."\
         .format(DATE))
 
-    print_statistics(G, fb_group_df, group_subsets)
+    # print_statistics(G, fb_group_df, group_subsets)
 
     # group_subsets = [
     #     set(domain_df_climate['domain_name'].values),
