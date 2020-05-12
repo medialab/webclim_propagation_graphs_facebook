@@ -38,7 +38,7 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
     fb_group_df['main_topic'] = fb_group_df[["nb_fake_news_climate", 
                                             "nb_fake_news_health", 
                                             "nb_fake_news_covid_19"]].idxmax(axis=1)
-    fb_group_df['main_topic'] = fb_group_df['main_topic'].apply(lambda x: x[20:])
+    fb_group_df['main_topic'] = fb_group_df['main_topic'].apply(lambda x: x[13:])
 
     fb_group_df["account_subscriber_count"] = fb_group_df[["account_subscriber_count_climate", 
                                                         "account_subscriber_count_health",
