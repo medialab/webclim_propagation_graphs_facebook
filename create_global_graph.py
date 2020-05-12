@@ -10,7 +10,6 @@ from networkx.algorithms import bipartite
 
 import os
 import sys
-import time
 
 from create_topic_graph import clean_data
 
@@ -149,7 +148,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 2:
         DATE = sys.argv[1]
     else:
-        DATE = time.strftime("%d,%m,%Y").replace(",", "_")
+        DATE = "28_04_2020"
         print("The date '{}' has been chosen by default.".format(DATE))
 
     CLEAN_DATA_DIRECTORY = "clean_data"
@@ -181,12 +180,12 @@ if __name__ == "__main__":
     print("The 'venn_diagram_facebook_groups_{}.png' figure has been saved in the 'figure' folder."\
         .format(DATE))
 
-    selected_groups = fb_group_df[(fb_group_df["nb_fake_news_covid_19"] > 2) &
-               (fb_group_df["nb_fake_news_climate"] > 2) &
-               (fb_group_df["nb_fake_news_health"] > 2) &
-               (fb_group_df["account_subscriber_count"] > 10000)]
-    print(selected_groups.sort_values(by=['account_subscriber_count'], ascending=False)\
-        [["account_name"]].to_string(index=False))
+    # selected_groups = fb_group_df[(fb_group_df["nb_fake_news_covid_19"] > 2) &
+    #            (fb_group_df["nb_fake_news_climate"] > 2) &
+    #            (fb_group_df["nb_fake_news_health"] > 2) &
+    #            (fb_group_df["account_subscriber_count"] > 10000)]
+    # print(selected_groups.sort_values(by=['account_subscriber_count'], ascending=False)\
+    #     [["account_id", "account_name"]].to_string(index=False))
 
     # print_statistics(G, fb_group_df, group_subsets)
 

@@ -12,7 +12,6 @@ import ural
 
 import os
 import sys
-import time
 
 
 def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
@@ -141,7 +140,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 3:
         DATE = sys.argv[2]
     else:
-        DATE = time.strftime("%d,%m,%Y").replace(",", "_")
+        DATE = "28_04_2020"
         print("The date '{}' has been chosen by default.".format(DATE))
 
     CLEAN_DATA_DIRECTORY = "clean_data"
