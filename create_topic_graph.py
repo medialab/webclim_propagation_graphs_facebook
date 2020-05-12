@@ -43,7 +43,7 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
     posts_df['domain_name'] = posts_df['url'].apply(lambda x: ural.get_domain_name(x))
 
     # Remove the plateforms from the analysis:
-    plateforms = ["facebook.com", "youtube.com", "twitter.com", "worpress.com", "instagram.com"]
+    plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
     posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
 
     # Remove the url with parameters from the analysis because CT return wrong results for them:
