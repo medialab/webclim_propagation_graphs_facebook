@@ -28,19 +28,17 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
                                             "nb_fake_news_shared": "nb_fake_news_shared_covid_19",
                                             "account_name": "account_name_covid"})
 
-    fb_group_df["nb_fake_news_shared"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) + 
-                                        fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) +
-                                        fb_group_df["nb_fake_news_shared_covid_19"].fillna(0).astype(int))
+    fb_group_df["nb_fake_news_climate"]  = fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int)
+    fb_group_df["nb_fake_news_health"]   = fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int)
+    fb_group_df["nb_fake_news_covid_19"] = fb_group_df["nb_fake_news_shared_covid_19"].fillna(0).astype(int)
 
-    fb_group_df["ratio_climate"] = (fb_group_df["nb_fake_news_shared_climate"].fillna(0).astype(int) /
-                                    fb_group_df["nb_fake_news_shared"])
+    fb_group_df["nb_fake_news"] = (fb_group_df["nb_fake_news_climate"] + 
+                                    fb_group_df["nb_fake_news_health"] +
+                                    fb_group_df["nb_fake_news_covid_19"])
 
-    fb_group_df["ratio_health"] = (fb_group_df["nb_fake_news_shared_health"].fillna(0).astype(int) /
-                                    fb_group_df["nb_fake_news_shared"])
-
-    fb_group_df['main_topic'] = fb_group_df[["nb_fake_news_shared_climate", 
-                                            "nb_fake_news_shared_health", 
-                                            "nb_fake_news_shared_covid_19"]].idxmax(axis=1)
+    fb_group_df['main_topic'] = fb_group_df[["nb_fake_news_climate", 
+                                            "nb_fake_news_health", 
+                                            "nb_fake_news_covid_19"]].idxmax(axis=1)
     fb_group_df['main_topic'] = fb_group_df['main_topic'].apply(lambda x: x[20:])
 
     fb_group_df["account_subscriber_count"] = fb_group_df[["account_subscriber_count_climate", 
@@ -52,8 +50,9 @@ def aggregate_fb_group(fb_group_df_climate, fb_group_df_health, fb_group_df_covi
                                                                 row['account_name_covid']], axis=1)
     fb_group_df['account_name'] = fb_group_df['account_name'].apply(lambda x: [i for i in x if type(i)==str][0])
 
-    fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count",
-                               "nb_fake_news_shared", "ratio_climate", "ratio_health", "main_topic"]]
+    fb_group_df = fb_group_df[["account_id", "account_name", "account_subscriber_count", "main_topic",
+                               "nb_fake_news", "nb_fake_news_climate", 
+                               "nb_fake_news_health", "nb_fake_news_covid_19"]]
     fb_group_df = fb_group_df.sort_values(by=["main_topic"])
                                
     return fb_group_df
@@ -88,11 +87,12 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE
     for _, row in fb_group_df.iterrows():
         bipartite_graph.add_node(int(row['account_id']),
                                  label=row['account_name'],
-                                 nb_fake_news_shared=row['nb_fake_news_shared'],
+                                 nb_fake_news_shared=row['nb_fake_news'],
                                  nb_followers=row['account_subscriber_count'],
-                                #  color=color_gradient(row['ratio_climate'], 
-                                #                       row['ratio_health'], NODE_COLOR),
-                                #  size=np.sqrt(row['nb_fake_news_shared'])
+                                #  color=color_gradient(row['nb_fake_news_climate']/row['nb_fake_news'], 
+                                #                       row['nb_fake_news_health']/row['nb_fake_news'], 
+                                #                       NODE_COLOR),
+                                #  size=np.sqrt(row['nb_fake_news'])
                                  main_topic=row['main_topic']
                                  )
 
@@ -140,7 +140,7 @@ def print_statistics(G, fb_group_df, group_subsets):
     generalist_group_df = fb_group_df[fb_group_df["account_id"].isin(generalist_groups)]
     
     print(generalist_group_df[["account_name", "betweenness_centrality", 
-                               "nb_fake_news_shared", "account_subscriber_count"]]\
+                               "nb_fake_news", "account_subscriber_count"]]\
             .sort_values(by='betweenness_centrality', ascending=False).head(5).to_string(index=False))
 
 
@@ -180,6 +180,13 @@ if __name__ == "__main__":
     create_venn_diagram(group_subsets, "facebook_groups", FIGURE_DIRECTORY, DATE)
     print("The 'venn_diagram_facebook_groups_{}.png' figure has been saved in the 'figure' folder."\
         .format(DATE))
+
+    selected_groups = fb_group_df[(fb_group_df["nb_fake_news_covid_19"] > 2) &
+               (fb_group_df["nb_fake_news_climate"] > 2) &
+               (fb_group_df["nb_fake_news_health"] > 2) &
+               (fb_group_df["account_subscriber_count"] > 10000)]
+    print(selected_groups.sort_values(by=['account_subscriber_count'], ascending=False)\
+        [["account_name"]].to_string(index=False))
 
     # print_statistics(G, fb_group_df, group_subsets)
 
