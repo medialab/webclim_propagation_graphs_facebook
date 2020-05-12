@@ -2,7 +2,7 @@
 
 Our general goal in WebClim is to better understand the fake news ecosystem about climate change.
 
-This specific projet maps the Facebook groups sharing news labelled as fake by the Science Feedback reviewers. We have published the results in [a French article on the medialab website](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/).
+This specific projet maps the Facebook groups sharing news labelled as fake by the Science Feedback reviewers. The first results are shown [here](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/) (in French).
 
 <img src="screenshot_graph.png"/>
 
