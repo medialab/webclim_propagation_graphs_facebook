@@ -39,6 +39,4 @@ fi
 # The COVID-19 command has taken 56 minutes to run on my computer (23 April, 328 URLs).
 # The health command has taken 1 hour and 52 minutes to run on my computer (23 April, 676 URLs).
 
-# The climate command has taken ? minutes to run on my computer (28 April, 269 URLs).
-# The COVID-19 command has taken ? minutes to run on my computer (28 April, 341 URLs).
-# The health command has taken 1 hour and 44 minutes to run on my computer (28 April, 626 URLs).
+# The COVID-19 command has taken 1 hour and 12 minutes to run on my computer (15 May, 432 URLs).
