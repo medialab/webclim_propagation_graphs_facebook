@@ -10,9 +10,15 @@ def vizualise_network(claim_beginning):
     sample_posts = posts_df[posts_df["url"].isin(sample_url['url'].unique())]
 
     G = nx.Graph()
-    G.add_node(claim, type="claim")
-    G.add_nodes_from(list(sample_url['url'].unique()), type="article_or_appearance")
-    G.add_nodes_from(list(sample_posts['account_name'].unique()), type="facebook_account_or_page")
+    G.add_node(claim, 
+               type="claim",
+               importance=5)
+    G.add_nodes_from(list(sample_url['url'].unique()), 
+                     type="article_or_appearance",
+                     importance=2)
+    G.add_nodes_from(list(sample_posts['account_name'].unique()), 
+                     type="facebook_account_or_page",
+                     importance=1)
 
     G.add_edges_from(list(sample_url[['Item reviewed', 'url']].itertuples(index=False, name=None)))
     G.add_edges_from(list(sample_posts[['account_name', 'url']].itertuples(index=False, name=None)))
@@ -26,4 +32,4 @@ if __name__ == "__main__":
 
     G = vizualise_network("Plandemic")
     nx.write_gexf(G, "./graph/propagation_plandemic.gexf", encoding="utf-8")
-    print(G.number_of_nodes())
+    print("The 'propagation_plandemic.gexf' graph has been saved in the 'graph' folder.")
