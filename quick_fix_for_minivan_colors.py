@@ -1,6 +1,5 @@
 import json
 import sys
-import time
 
 
 if __name__ == "__main__":
@@ -18,7 +17,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 3:
         DATE = sys.argv[2]
     else:
-        DATE = time.strftime("%d,%m,%Y").replace(",", "_")
+        DATE = "15_05_2020"
         print("The date '{}' has been chosen by default.".format(DATE))
 
     NODE_COLOR = {
