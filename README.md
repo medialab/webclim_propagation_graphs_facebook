@@ -16,9 +16,9 @@ git clone https://github.com/medialab/webclim_analyses
 cd webclim_analyses
 pip install -r requirements.txt
 ```
-You should also export the two following tables in a CSV format from the Science Feedback database:
-* "Appearances-Grid view.csv"
-* "Reviews _ Fact-checks-Grid view.csv"
+You should also export the two following tables in a CSV format from the Science Feedback database, and add the date:
+* "Appearances-Grid view 15_05_2020.csv"
+* "Reviews _ Fact-checks-Grid view 15_05_2020.csv"
 
 And put them in the `raw_data` folder. 
 
@@ -30,36 +30,38 @@ You should finally get a crowdtangle token and write it in a `config.json` file 
 You can first analyze the Facebook groups sharing fake news about the climate.
 First run this command to clean the Science Feedback data:
 ```
-python clean_data.py climate
+python clean_data.py climate 15_05_2020
 ```
-This command will fetch the Facebook groups having shared the fake news listed by Science Feedback. It should take a certain time to run (1-2 hours):
+The date is used to precise which data you want to clean.
+
+The next command will fetch the Facebook groups having shared the fake news listed by Science Feedback. It should take a certain time to run (1-2 hours):
 ```
-./minet_requests.sh climate
+./minet_requests.sh climate 15_05_2020
 ```
 Finally you should run this to create the corresponding graph:
 ```
-python create_topic_graph.py climate
+python create_topic_graph.py climate 15_05_2020
 ```
 Each command should be run in order because each will use the output of the former as its input.
 
 You can run the same analysis on the fake news about health:
 ```
-python clean_data.py health
-./minet_requests.sh health
-python create_topic_graph.py health
+python clean_data.py health 15_05_2020
+./minet_requests.sh health 15_05_2020
+python create_topic_graph.py health 15_05_2020
 ```
 
 or about COVID-19:
 ```
-python clean_data.py COVID-19
-./minet_requests.sh COVID-19
-python create_topic_graph.py COVID-19
+python clean_data.py COVID-19 15_05_2020
+./minet_requests.sh COVID-19 15_05_2020
+python create_topic_graph.py COVID-19 15_05_2020
 ```
 
 ### Create a global graph and compare the topics
 You can only run this command if you have run all the commands above because we will use their data:
 ```
-python create_global_graph.py
+python create_global_graph.py 15_05_2020
 ```
 
 ### Minivan quick hack
