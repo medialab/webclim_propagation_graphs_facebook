@@ -28,10 +28,6 @@ def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
     # Remove the spaces added by error arount the URLs
     url_df['url'] = url_df['url'].transform(lambda x: x.strip())
 
-    # Remove the URLs that are in double in the dataframe, 
-    # keeping only the first, i.e. the more recent ocurrence.
-    url_df = url_df.drop_duplicates(subset = "url", keep = "first")
-
     # Filter the URLs to keep only the ones flagged as False or equivalent:
     url_df = url_df[(url_df['Flag as'].isin(['False', 'Partly false', 'Misleading', 'False headline']))]
 
@@ -56,6 +52,10 @@ def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
                                                                      strip_protocol=False, 
                                                                      strip_trailing_slash=True))
     url_df['domain_name'] = url_df['url'].apply(lambda x: ural.get_domain_name(x))
+
+    # Remove the URLs that are in double in the dataframe, 
+    # keeping only the first, i.e. the more recent ocurrence.
+    url_df = url_df.drop_duplicates(subset = "url", keep = "first")
 
     # Remove the plateforms from the analysis:
     plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
