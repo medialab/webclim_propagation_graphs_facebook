@@ -5,3 +5,4 @@ minet==0.25.0
 networkx==2.4
 ural==0.21.0
 matplotlib-venn==0.11.5
+jupyter==1.0.0

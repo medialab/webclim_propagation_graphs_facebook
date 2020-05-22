@@ -1,8 +1,6 @@
 # WEBCLIM
 
-Our general goal in WebClim is to better understand the fake news ecosystem about climate change.
-
-This specific projet maps the Facebook groups sharing news labelled as fake by the Science Feedback reviewers. The first results are shown [here](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/) (in French).
+WebClim is a research project in Sciences Po's medialab. Our goal is to analyze the fake news ecosystem about climate change, and other scientific topics, on Facebook, Twitter, Youtube, and other platforms. The first results are shown [here](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/) (in French).
 
 <img src="screenshot_graph.png"/>
 
@@ -16,13 +14,11 @@ git clone https://github.com/medialab/webclim_analyses
 cd webclim_analyses
 pip install -r requirements.txt
 ```
-You should also export the two following tables in a CSV format from the Science Feedback database, and add the date:
+You should export the two following tables in a CSV format from the Science Feedback Airtable database, add the day's date in their name, and put them in the `raw_data` folder:
 * "Appearances-Grid view 15_05_2020.csv"
 * "Reviews _ Fact-checks-Grid view 15_05_2020.csv"
 
-And put them in the `raw_data` folder. 
-
-You should finally get a crowdtangle token and write it in a `config.json` file similar to the `config.json.example` file 
+You should also get a crowdtangle token and write it in a `config.json` file similar to the `config.json.example` file 
 (except that you should write the token value instead of "blablabla").
 
 ### Run the analysis topic by topic
@@ -30,44 +26,42 @@ You should finally get a crowdtangle token and write it in a `config.json` file 
 You can first analyze the Facebook groups sharing fake news about the climate.
 First run this command to clean the Science Feedback data:
 ```
-python clean_data.py climate 15_05_2020
+python ./src/clean_data.py climate 15_05_2020
 ```
 The date is used to precise which data you want to clean.
 
 The next command will fetch the Facebook groups having shared the fake news listed by Science Feedback. It should take a certain time to run (1-2 hours):
 ```
-./minet_requests.sh climate 15_05_2020
+./src/minet_requests.sh climate 15_05_2020
 ```
 Finally you should run this to create the corresponding graph:
 ```
-python create_topic_graph.py climate 15_05_2020
+python ./src/create_topic_graph.py climate 15_05_2020
 ```
 Each command should be run in order because each will use the output of the former as its input.
 
 You can run the same analysis on the fake news about health:
 ```
-python clean_data.py health 15_05_2020
-./minet_requests.sh health 15_05_2020
-python create_topic_graph.py health 15_05_2020
+python ./src/clean_data.py health 15_05_2020
+./src/minet_requests.sh health 15_05_2020
+python ./src/create_topic_graph.py health 15_05_2020
 ```
 
 or about COVID-19:
 ```
-python clean_data.py COVID-19 15_05_2020
-./minet_requests.sh COVID-19 15_05_2020
-python create_topic_graph.py COVID-19 15_05_2020
+python ./src/clean_data.py COVID-19 15_05_2020
+./src/minet_requests.sh COVID-19 15_05_2020
+python ./src/create_topic_graph.py COVID-19 15_05_2020
 ```
 
 ### Create a global graph and compare the topics
 You can only run this command if you have run all the commands above because we will use their data:
 ```
-python create_global_graph.py 15_05_2020
+python ./src/create_global_graph.py 15_05_2020
 ```
 
 ### Minivan quick hack
 This little hack is to manipulate the colors put by minivan when creating the json graph:
 ```
-python quick_fix_for_minivan_colors.py climate
-python quick_fix_for_minivan_colors.py health
-python quick_fix_for_minivan_colors.py COVID-19
+python ./src/quick_fix_for_minivan_colors.py climate 15_05_2020
 ```
