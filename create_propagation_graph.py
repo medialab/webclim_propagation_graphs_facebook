@@ -27,8 +27,8 @@ def vizualise_network(claim_beginning):
 
 
 if __name__ == "__main__":
-    url_df = pd.read_csv("./clean_data/fake_url_COVID-19_15_05_2020.csv")
-    posts_df = pd.read_csv("./clean_data/fake_posts_COVID-19_15_05_2020.csv")
+    url_df = pd.read_csv("./clean_data/fake_url_COVID-19_20_05_2020.csv")
+    posts_df = pd.read_csv("./clean_data/fake_posts_COVID-19_20_05_2020.csv")
 
     G = vizualise_network("Plandemic")
     nx.write_gexf(G, "./graph/propagation_plandemic.gexf", encoding="utf-8")
