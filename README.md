@@ -1,6 +1,6 @@
 # WEBCLIM
 
-WebClim is a research project in Sciences Po's medialab. Our goal is to analyze the fake news ecosystem about climate change, and other scientific topics, on Facebook, Twitter, Youtube, and other platforms. The first results are shown [here](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/) (in French).
+[WebClim](https://medialab.sciencespo.fr/activites/webclim/) is a research project in Sciences Po's medialab. Our goal is to analyze the fake news ecosystem about climate change, and other scientific topics, on Facebook, Twitter, Youtube, and other platforms. The first results are shown [here](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/) (in French).
 
 <img src="screenshot_graph.png"/>
 
@@ -18,7 +18,7 @@ You should export the two following tables in a CSV format from the Science Feed
 * "Appearances-Grid view 15_05_2020.csv"
 * "Reviews _ Fact-checks-Grid view 15_05_2020.csv"
 
-You should also get a crowdtangle token and write it in a `config.json` file similar to the `config.json.example` file 
+You should also get a CrowdTangle token and write it in a `config.json` file similar to the `config.json.example` file 
 (except that you should write the token value instead of "blablabla").
 
 ### Run the analysis topic by topic
@@ -38,7 +38,7 @@ Finally you should run this to create the corresponding graph:
 ```
 python ./src/create_topic_graph.py climate 15_05_2020
 ```
-Each command should be run in order because each will use the output of the former as its input.
+The commands should be run one after the other, because each script will use the output of the former script as its input.
 
 You can run the same analysis on the fake news about health:
 ```
