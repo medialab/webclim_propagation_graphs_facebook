@@ -2,6 +2,7 @@
 *.csv
 *.gexf
 *.ipynb
+!data_viz_covid_one_page_v0.ipynb
 
 *.png
 !screenshot_graph.png
