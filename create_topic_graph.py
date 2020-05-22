@@ -20,10 +20,6 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
     posts_path = os.path.join(".", CLEAN_DATA_DIRECTORY, 
                               "fake_posts_" + SCIENTIFIC_TOPIC + "_" + DATE + ".csv")
     posts_df = pd.read_csv(posts_path)
-
-    # Remove the url with parameters from the analysis because CT return wrong results for them:
-    posts_df['parameter_in_url'] = posts_df['url'].apply(lambda x: '?' in x)
-    posts_df = posts_df[posts_df['parameter_in_url']==False]
         
     posts_df = posts_df[posts_df["platform"] == "Facebook"]
     posts_df = posts_df.dropna(subset=['account_id', 'url'])
@@ -41,13 +37,13 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
 
     posts_df['domain_name'] = posts_df['url'].apply(lambda x: ural.get_domain_name(x))
 
-    # Remove the plateforms from the analysis:
-    plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
-    posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
+    # # Remove the plateforms from the analysis:
+    # plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
+    # posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
 
-    # Remove the url with parameters from the analysis because CT return wrong results for them:
-    posts_df['parameter_in_url'] = posts_df['url'].apply(lambda x: '?' in x)
-    posts_df = posts_df[posts_df['parameter_in_url']==False]
+    # # Remove the url with parameters from the analysis because CT return wrong results for them:
+    # posts_df['parameter_in_url'] = posts_df['url'].apply(lambda x: '?' in x)
+    # posts_df = posts_df[posts_df['parameter_in_url']==False]
     
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the number of followers
@@ -77,8 +73,8 @@ def print_statistics(fb_group_df, domain_df):
 
     print()
     print("The top 10 of facebook groups sharing the more fake URLs:\n")
-    print(fb_group_df[["account_name", "nb_fake_news_shared"]]\
-        .sort_values(by='nb_fake_news_shared', ascending=False).head(10).to_string(index=False))
+    print(fb_group_df[["account_name", "nb_fake_news_shared", "account_subscriber_count"]]\
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(20).to_string(index=False))
 
     print()
     print("The top 10 of domains sharing the more fake URLs:\n")
@@ -140,7 +136,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 3:
         DATE = sys.argv[2]
     else:
-        DATE = "28_04_2020"
+        DATE = "20_05_2020"
         print("The date '{}' has been chosen by default.".format(DATE))
 
     CLEAN_DATA_DIRECTORY = "clean_data"

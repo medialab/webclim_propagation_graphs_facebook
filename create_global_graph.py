@@ -148,7 +148,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 2:
         DATE = sys.argv[1]
     else:
-        DATE = "28_04_2020"
+        DATE = "20_05_2020"
         print("The date '{}' has been chosen by default.".format(DATE))
 
     CLEAN_DATA_DIRECTORY = "clean_data"

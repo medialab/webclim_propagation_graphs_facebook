@@ -57,13 +57,13 @@ def clean_data(url_df, fact_check_df, SCIENTIFIC_TOPIC):
     # keeping only the first, i.e. the more recent ocurrence.
     url_df = url_df.drop_duplicates(subset = "url", keep = "first")
 
-    # Remove the plateforms from the analysis:
-    plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
-    url_df = url_df[~url_df['domain_name'].isin(plateforms)]
+    # # Remove the plateforms from the analysis:
+    # plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
+    # url_df = url_df[~url_df['domain_name'].isin(plateforms)]
 
-    # Remove the url with parameters from the analysis because CT return wrong results for them:
-    url_df['parameter_in_url'] = url_df['url'].apply(lambda x: '?' in x)
-    url_df = url_df[url_df['parameter_in_url']==False]
+    # # Remove the url with parameters from the analysis because CT return wrong results for them:
+    # url_df['parameter_in_url'] = url_df['url'].apply(lambda x: '?' in x)
+    # url_df = url_df[url_df['parameter_in_url']==False]
 
     url_df = url_df[['url', 'Item reviewed', 'field', 'domain_name']]
     
@@ -92,7 +92,7 @@ if __name__ == "__main__":
     if len(sys.argv) >= 3:
         DATE = sys.argv[2]
     else:
-        DATE = time.strftime("%d,%m,%Y").replace(",", "_")
+        DATE = "20_05_2020"
         print("The date '{}' has been chosen by default.".format(DATE))
 
     RAW_DATA_DIRECTORY = "raw_data"
