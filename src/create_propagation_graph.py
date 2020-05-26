@@ -19,9 +19,9 @@ def create_graph(SCIENTIFIC_TOPIC, CLAIM, DATE,
     posts_df = pd.read_csv("./{}/fake_posts_{}_{}.csv"\
         .format(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE))
     sample_posts = posts_df[posts_df["url"].isin(sample_url['url'].unique())]
-    
+
     sample_posts = sample_posts[["url", "account_name", "account_id", "account_subscriber_count"]]
-    sample_posts = sample_posts.drop_duplicates(subset=['account_id'])
+    sample_posts = sample_posts.drop_duplicates(subset=["url", 'account_id'])
     sample_posts = sample_posts.dropna(subset=['account_id'])
 
     G = nx.Graph()
@@ -31,13 +31,15 @@ def create_graph(SCIENTIFIC_TOPIC, CLAIM, DATE,
                     label=row['account_name'],
                     color="#F00",
                     type="facebook_group",
-                    number_of_followers=row['account_subscriber_count'],
+                    # node_size=2
+                    number_of_followers=row['account_subscriber_count']
                     )
 
     G.add_node(claim, color="#0F0", type="claim")
+    # G.add_node(claim, color="#0F0", type="claim", node_size=20)
 
-    G.add_nodes_from(list(sample_url['url'].unique()), 
-                     color="#55F", type="article_or_media")
+    G.add_nodes_from(list(sample_url['url'].unique()), color="#55F", type="article_or_media")
+    # G.add_nodes_from(list(sample_url['url'].unique()), color="#55F", type="article_or_media", node_size=5)
 
     G.add_edges_from(list(sample_url[['Item reviewed', 'url']].itertuples(index=False, name=None)))
     G.add_edges_from(list(sample_posts[['account_id', 'url']].itertuples(index=False, name=None)))
