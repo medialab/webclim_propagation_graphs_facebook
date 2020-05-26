@@ -74,7 +74,7 @@ def print_statistics(fb_group_df, domain_df):
     print()
     print("The top 10 of facebook groups sharing the more fake URLs:\n")
     print(fb_group_df[["account_name", "nb_fake_news_shared", "account_subscriber_count"]]\
-        .sort_values(by='nb_fake_news_shared', ascending=False).head(10).to_string(index=False))
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(60).to_string(index=False))
 
     print()
     print("The top 10 of domains sharing the more fake URLs:\n")
