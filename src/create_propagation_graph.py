@@ -19,8 +19,10 @@ def create_graph(SCIENTIFIC_TOPIC, CLAIM, DATE,
     posts_df = pd.read_csv("./{}/fake_posts_{}_{}.csv"\
         .format(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE))
     sample_posts = posts_df[posts_df["url"].isin(sample_url['url'].unique())]
+    
     sample_posts = sample_posts[["url", "account_name", "account_id", "account_subscriber_count"]]
     sample_posts = sample_posts.drop_duplicates(subset=['account_id'])
+    sample_posts = sample_posts.dropna(subset=['account_id'])
 
     G = nx.Graph()
 
