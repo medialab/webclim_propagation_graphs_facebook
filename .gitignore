@@ -13,9 +13,5 @@ __pycache__/*
 *.json
 !climate_28_04_2020.json
 !global_28_04_2020.json
-!COVID-19_28_04_2020.json
-!COVID-19_15_05_2020.json
-!COVID-19_20_05_2020.json
-!Plandemic1.json
-!Plandemic2.json
-!Plandemic3.json
+!Covid-19.json
+!Plandemic.json
