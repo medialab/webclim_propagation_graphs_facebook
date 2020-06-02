@@ -16,8 +16,8 @@ fi
 if [ $# -ge 2 ] ; then
         DATE=$2
 else
-        DATE=$(date +'%d_%m_%Y')
-        echo "The topic '${DATE}' has been chosen by default."
+        DATE="02_06_2020"
+        echo "The date '${DATE}' has been chosen by default."
 fi
 
 CLEAN_DATA_DIRECTORY="clean_data"
@@ -40,7 +40,12 @@ fi
 # The COVID-19 command has taken 56 minutes to run (328 URLs).
 # The health command has taken 1 hour and 52 minutes (676 URLs).
 
-## 15 May requests:
+## 15 May requests (w/o the plateforms):
 # The climate command has taken 48 minutes (275 URLs).
 # The COVID-19 command has taken 1 hour and 12 minutes (432 URLs).
 # The health command has taken 1 hour and 42 minutes (613 URLs).
+
+## 2 June requests (w all the plateforms):
+# The climate command has taken 1 jour and 15 minutes (431 URLs).
+# The COVID-19 command has taken 2 hours and 8 minutes (719 URLs).
+# The health command has taken 2 hours and 51 minutes (881 URLs).
