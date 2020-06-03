@@ -88,10 +88,12 @@ def create_global_graph(posts_df, fb_group_df, NODE_COLOR, GRAPH_DIRECTORY, DATE
                                  label=row['account_name'],
                                  nb_fake_news_shared=row['nb_fake_news'],
                                  nb_followers=row['account_subscriber_count'],
+                                # # This is to make the graph with ipySigma and the gradient colors:
                                 #  color=color_gradient(row['nb_fake_news_climate']/row['nb_fake_news'], 
                                 #                       row['nb_fake_news_health']/row['nb_fake_news'], 
                                 #                       NODE_COLOR),
                                 #  size=np.sqrt(row['nb_fake_news'])
+                                # This is to make the graph with Minivan and the three unique colors:
                                  main_topic=row['main_topic']
                                  )
 
@@ -180,21 +182,4 @@ if __name__ == "__main__":
     print("The 'venn_diagram_facebook_groups_{}.png' figure has been saved in the 'figure' folder."\
         .format(DATE))
 
-    # selected_groups = fb_group_df[(fb_group_df["nb_fake_news_covid_19"] > 2) &
-    #            (fb_group_df["nb_fake_news_climate"] > 2) &
-    #            (fb_group_df["nb_fake_news_health"] > 2) &
-    #            (fb_group_df["account_subscriber_count"] > 10000)]
-    # print(selected_groups.sort_values(by=['account_subscriber_count'], ascending=False)\
-    #     [["account_id", "account_name"]].to_string(index=False))
-
-    # print_statistics(G, fb_group_df, group_subsets)
-
-    # group_subsets = [
-    #     set(domain_df_climate['domain_name'].values),
-    #     set(domain_df_health['domain_name'].values),
-    #     set(domain_df_covid19['domain_name'].values)
-    #     ]
-    # create_venn_diagram(group_subsets, "domain", FIGURE_DIRECTORY, DATE)
-    # print("The 'venn_diagram_domain_{}.png' figure has been saved in the 'figure' folder."\
-    #     .format(DATE))
-    
+    print_statistics(G, fb_group_df, group_subsets)

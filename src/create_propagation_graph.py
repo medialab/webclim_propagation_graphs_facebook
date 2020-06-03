@@ -44,6 +44,9 @@ def create_graph(SCIENTIFIC_TOPIC, CLAIM, DATE,
     G.add_edges_from(list(sample_url[['Item reviewed', 'url']].itertuples(index=False, name=None)))
     G.add_edges_from(list(sample_posts[['account_id', 'url']].itertuples(index=False, name=None)))
 
+    print(G.number_of_nodes())
+    print(G.number_of_edges())
+
     nx.write_gexf(G, './{}/{}.gexf'.format(GRAPH_DIRECTORY, CLAIM), encoding="utf-8")
 
 

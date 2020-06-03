@@ -20,7 +20,12 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
     posts_path = os.path.join(".", CLEAN_DATA_DIRECTORY, 
                               "fake_posts_" + SCIENTIFIC_TOPIC + "_" + DATE + ".csv")
     posts_df = pd.read_csv(posts_path)
-        
+
+    if DATE == "28_04_2020":        
+        # Remove the url with parameters from the analysis because CT return wrong results for them:
+        posts_df['parameter_in_url'] = posts_df['url'].apply(lambda x: '?' in x)
+        posts_df = posts_df[posts_df['parameter_in_url']==False]
+
     posts_df = posts_df[posts_df["platform"] == "Facebook"]
     posts_df = posts_df.dropna(subset=['account_id', 'url'])
     posts_df['account_id'] = posts_df['account_id'].apply(lambda x:int(x))
@@ -30,21 +35,18 @@ def clean_data(CLEAN_DATA_DIRECTORY, SCIENTIFIC_TOPIC, DATE):
     posts_df = posts_df[['url', 'account_name', 'account_id',
                          'account_subscriber_count', 'actual_like_count']]
     posts_df = posts_df.drop_duplicates(subset=['url', 'account_id'], keep='last')
-        
+
+    posts_df['domain_name'] = posts_df['url'].apply(lambda x: ural.get_domain_name(x))
+
+    if DATE == "28_04_2020":
+        # Remove the platforms from the analysis:
+        platforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
+        posts_df = posts_df[~posts_df['domain_name'].isin(platforms)]
+
     # We remove the facebook groups that have shared only one fake URL:
     vc = posts_df['account_id'].value_counts()
     posts_df = posts_df[posts_df['account_id'].isin(vc[vc > 1].index)]
 
-    posts_df['domain_name'] = posts_df['url'].apply(lambda x: ural.get_domain_name(x))
-
-    # # Remove the plateforms from the analysis:
-    # plateforms = ["facebook.com", "youtube.com", "twitter.com", "wordpress.com", "instagram.com"]
-    # posts_df = posts_df[~posts_df['domain_name'].isin(plateforms)]
-
-    # # Remove the url with parameters from the analysis because CT return wrong results for them:
-    # posts_df['parameter_in_url'] = posts_df['url'].apply(lambda x: '?' in x)
-    # posts_df = posts_df[posts_df['parameter_in_url']==False]
-    
     # We prepare a dataframe to import the facebook group nodes with specific attributes:
     # - the number of followers
     # - the account name -> label
@@ -74,20 +76,13 @@ def print_statistics(fb_group_df, domain_df):
     print()
     print("The top 10 of facebook groups sharing the more fake URLs:\n")
     print(fb_group_df[["account_name", "nb_fake_news_shared", "account_subscriber_count"]]\
-        .sort_values(by='nb_fake_news_shared', ascending=False).head(60).to_string(index=False))
+        .sort_values(by='nb_fake_news_shared', ascending=False).head(10).to_string(index=False))
 
     print()
     print("The top 10 of domains sharing the more fake URLs:\n")
     print(domain_df[["domain_name", "nb_fake_news_shared"]]\
         .sort_values(by='nb_fake_news_shared', ascending=False).head(10).to_string(index=False))
 
-    # print("\n\nThe top 5 of facebook groups with the more followers:\n")
-    # temp = posts_df[['account_name', 'account_subscriber_count']].drop_duplicates()
-    # print(temp.sort_values(by='account_subscriber_count', ascending=False).head())
-
-    # print("\n\nThe top 5 of facebook groups whose posts get the most cumulated likes:")
-    # temp = posts_df[['account_name', 'actual_like_count']].groupby(['account_name']).sum()
-    # print(temp.sort_values(by='actual_like_count', ascending=False).head())
     print()
 
 
