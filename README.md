@@ -71,7 +71,7 @@ The second graph showing the propagation of the Plandemic movie can be replicate
 python ./src/create_propagation_graph.py COVID-19 Plandemic 20_05_2020
 ```
 
-The figures showing the temporal evolution of the Facebook groups can be reproduced with this other GitHub repo (in construction for now).
+The figures showing the temporal evolution of the Facebook groups can be reproduced with [this other GitHub repo](https://github.com/medialab/webclim_temporal_evolution_facebook).
 
 ### Minivan quick hack
 This little hack is to manipulate the colors displayed by Minivan when creating the json graph:
