@@ -10,7 +10,7 @@ This project was developed on Python 3.7.6, so you should first install Python.
 Then run these commands in your terminal (in a virtualenv if you prefer):
 
 ```
-git clone https://github.com/medialab/webclim_analyses
+git clone https://github.com/medialab/webclim_propagation_graphs_facebook
 cd webclim_analyses
 pip install -r requirements.txt
 ```
