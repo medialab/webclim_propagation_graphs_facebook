@@ -1,6 +1,8 @@
 # WEBCLIM
 
-[WebClim](https://medialab.sciencespo.fr/activites/webclim/) is a research project in Sciences Po's medialab. Our goal is to analyze the fake news ecosystem about climate change, and other scientific topics, on Facebook, Twitter, Youtube, and other platforms. The first results are shown [here](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/) and [here](https://medialab.sciencespo.fr/actu/les-infox-sur-le-covid-sous-surveillance/) (in French).
+[WebClim](https://medialab.sciencespo.fr/activites/webclim/) is a research project in Sciences Po's medialab. Our goal is to analyze the fake news ecosystem about climate change, and other scientific topics, on Facebook, Twitter, Youtube, and other platforms. 
+
+The first results are explained [here](https://medialab.sciencespo.fr/actu/une-cartographie-facebook-des-infox-scientifiques-sur-le-climat/) and [here](https://medialab.sciencespo.fr/actu/les-infox-sur-le-covid-sous-surveillance/) (in French).
 
 <img src="screenshot_graph.png"/>
 
@@ -79,5 +81,4 @@ This little hack is to manipulate the colors displayed by Minivan when creating 
 python ./src/quick_fix_for_minivan_colors.py climate 28_04_2020
 python ./src/quick_fix_for_minivan_colors.py global 28_04_2020
 python ./src/quick_fix_for_minivan_colors.py COVID-19 20_05_2020
-
 ```
