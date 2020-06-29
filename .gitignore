@@ -2,13 +2,13 @@
 *.csv
 *.gexf
 *.ipynb
-!data_viz_covid_one_page_v0.ipynb
 
 *.png
 !screenshot_graph.png
 !venn_diagram_facebook_groups_28_04_2020.png
 
 __pycache__/*
+src/__pycache__/*
 
 *.json
 !climate_28_04_2020.json
